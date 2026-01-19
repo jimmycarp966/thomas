@@ -1,0 +1,59 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e7]: psychology
+          - generic [ref=e8]:
+            - heading "Thomas" [level=1] [ref=e9]
+            - paragraph [ref=e10]: Asistente Pro
+        - navigation [ref=e11]:
+          - link "dashboard Panel" [ref=e12] [cursor=pointer]:
+            - /url: /dashboard
+            - generic [ref=e13]: dashboard
+            - generic [ref=e14]: Panel
+          - link "candlestick_chart Trades" [ref=e15] [cursor=pointer]:
+            - /url: /trading
+            - generic [ref=e16]: candlestick_chart
+            - generic [ref=e17]: Trades
+          - link "monitoring Analítica" [ref=e18] [cursor=pointer]:
+            - /url: /analytics
+            - generic [ref=e19]: monitoring
+            - generic [ref=e20]: Analítica
+          - link "history Timeline" [ref=e21] [cursor=pointer]:
+            - /url: /activity
+            - generic [ref=e22]: history
+            - generic [ref=e23]: Timeline
+          - link "chat Chat IA" [ref=e24] [cursor=pointer]:
+            - /url: /chat
+            - generic [ref=e25]: chat
+            - generic [ref=e26]: Chat IA
+          - link "self_improvement Bienestar" [ref=e27] [cursor=pointer]:
+            - /url: /wellness
+            - generic [ref=e28]: self_improvement
+            - generic [ref=e29]: Bienestar
+      - generic [ref=e31]:
+        - link "settings Configuración" [ref=e32] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e33]: settings
+          - generic [ref=e34]: Configuración
+        - generic [ref=e35]:
+          - generic [ref=e36]: D
+          - generic [ref=e37]:
+            - generic [ref=e38]: Daniel
+            - generic [ref=e39]: Propietario
+    - main [ref=e40]:
+      - button "notifications" [ref=e43] [cursor=pointer]:
+        - generic [ref=e44]: notifications
+  - status [ref=e49]:
+    - generic [ref=e50]:
+      - img [ref=e52]
+      - generic [ref=e54]:
+        - text: Static route
+        - button "Hide static indicator" [ref=e55] [cursor=pointer]:
+          - img [ref=e56]
+  - alert [ref=e59]
+```

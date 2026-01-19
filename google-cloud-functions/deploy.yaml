@@ -1,0 +1,40 @@
+# Google Cloud Functions Deployment Configuration
+
+# Analyze Trading Signal Function
+- name: analyze-trading-signal
+  runtime: python311
+  entryPoint: analyze_trading_signal
+  source: .
+  environment_variables:
+    SUPABASE_URL: ${SUPABASE_URL}
+    SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    GOOGLE_CLOUD_PROJECT_ID: ${GOOGLE_CLOUD_PROJECT_ID}
+  memory: 512MB
+  timeout: 300s
+  max_instances: 10
+
+# Execute Trade Function
+- name: execute-trade
+  runtime: python311
+  entryPoint: execute_trade
+  source: .
+  environment_variables:
+    SUPABASE_URL: ${SUPABASE_URL}
+    SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    GOOGLE_CLOUD_PROJECT_ID: ${GOOGLE_CLOUD_PROJECT_ID}
+  memory: 512MB
+  timeout: 300s
+  max_instances: 10
+
+# Monitor Positions Function
+- name: monitor-positions
+  runtime: python311
+  entryPoint: monitor_positions
+  source: .
+  environment_variables:
+    SUPABASE_URL: ${SUPABASE_URL}
+    SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    GOOGLE_CLOUD_PROJECT_ID: ${GOOGLE_CLOUD_PROJECT_ID}
+  memory: 256MB
+  timeout: 300s
+  max_instances: 10

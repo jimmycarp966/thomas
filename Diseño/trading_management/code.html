@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trading Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;family=Noto+Sans:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007a7a",
+              "background-light": "#f7f7f7",
+              "background-dark": "#0d0d0d",
+              "surface-dark": "#1b2828", // Matches the example component bg
+              "border-dark": "#2d3f3f"   // Slightly lighter for borders
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for dark mode feeling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0d0d; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3f3f; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3d5555; 
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- Side Navigation -->
+<aside class="hidden md:flex flex-col w-72 h-full border-r border-[#2d3f3f] bg-[#101818] flex-shrink-0">
+<div class="p-6 flex flex-col h-full justify-between">
+<!-- Top Section -->
+<div class="flex flex-col gap-8">
+<!-- User Profile / Branding -->
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-12 ring-2 ring-[#2d3f3f]" data-alt="User profile avatar with abstract geometric background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAddvPCJDhJsHZAg2007DY9Ebi3z8TRxM8Rubz9QMl38jp3X9smmDGbRj_JSKndaA7LtTG0VohJtoVU6ITos99aWEaScOESJR4x2_906f2hMgHywTcrlSg8NL9ESvonaT8c5wpGwKoQl0GmMocKT5cZoSYer3j-5Rk1nhQvuzwoc04DgPygzFvHlA-8tlXpb3rx6svBwOFDv_2a7XENk3KUQNfd9m4YoZJzmyQ7sIzSOJoTMACG6rNXlslOBe5zCLU3AD90_ypYb_N1");'></div>
+<div class="flex flex-col">
+<h1 class="text-white text-lg font-bold leading-tight">Trader AI</h1>
+<p class="text-[#9abcbc] text-xs font-medium uppercase tracking-wider">Pro Account</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9abcbc] hover:bg-[#1b2828] hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">grid_view</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1b2828] border border-[#2d3f3f] text-white shadow-sm" href="#">
+<span class="material-symbols-outlined text-primary fill-1">candlestick_chart</span>
+<span class="text-sm font-bold">Trading</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9abcbc] hover:bg-[#1b2828] hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-pink-400 transition-colors">favorite</span>
+<span class="text-sm font-medium">Wellness</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9abcbc] hover:bg-[#1b2828] hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-white transition-colors">history</span>
+<span class="text-sm font-medium">History</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9abcbc] hover:bg-[#1b2828] hover:text-white transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-white transition-colors">analytics</span>
+<span class="text-sm font-medium">Analysis</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Section -->
+<div class="flex flex-col gap-4">
+<button class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg h-12 px-4 bg-primary hover:bg-[#006666] text-white transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="text-sm font-bold tracking-wide">New Trade</span>
+</button>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-[#9abcbc] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full bg-background-dark relative overflow-y-auto overflow-x-hidden">
+<!-- Mobile Header (Visible only on small screens) -->
+<div class="md:hidden flex items-center justify-between p-4 border-b border-[#2d3f3f] bg-[#101818]">
+<h1 class="text-white font-bold">Trader AI</h1>
+<button class="text-white p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<div class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-8 flex flex-col gap-6">
+<!-- Page Header & Tabs -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2 border-b border-[#2d3f3f]">
+<div class="flex flex-col gap-2">
+<h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">Trading Management</h2>
+<div class="flex items-center gap-2 text-[#9abcbc]">
+<span class="material-symbols-outlined text-sm">smart_toy</span>
+<p class="text-sm font-medium">AI Assistant is monitoring 12 active signals.</p>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex items-center gap-1 bg-[#1b2828] p-1 rounded-lg border border-[#2d3f3f]">
+<button class="px-6 py-2 rounded-md bg-[#2d3f3f] text-white shadow-sm text-sm font-bold transition-all">Active Trades</button>
+<button class="px-6 py-2 rounded-md hover:bg-white/5 text-[#9abcbc] hover:text-white text-sm font-medium transition-all">History</button>
+<button class="px-6 py-2 rounded-md hover:bg-white/5 text-[#9abcbc] hover:text-white text-sm font-medium transition-all">Analysis</button>
+</div>
+</div>
+<!-- AI Insight Widget -->
+<div class="bg-gradient-to-r from-[#1b2828] to-[#101818] rounded-xl border border-[#2d3f3f] p-4 flex items-start gap-4 shadow-sm relative overflow-hidden group">
+<div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/10 to-transparent pointer-events-none"></div>
+<div class="bg-primary/20 p-2 rounded-lg text-primary shrink-0">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div class="flex flex-col gap-1 z-10">
+<h4 class="text-white text-sm font-bold">Market Sentiment Analysis</h4>
+<p class="text-[#9abcbc] text-sm">Bitcoin volatility is unusually low (1.2%). The AI model suggests consolidating profits. Take a break to breathe; stress levels are correlated with market choppiness.</p>
+</div>
+<button class="ml-auto text-white/50 hover:text-white self-start">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<!-- Main Chart Section -->
+<div class="flex flex-col gap-4">
+<div class="bg-[#1b2828] rounded-xl border border-[#2d3f3f] shadow-xl overflow-hidden flex flex-col h-[500px]">
+<!-- Chart Header -->
+<div class="flex items-center justify-between p-4 border-b border-[#2d3f3f] bg-[#1b2828]">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="bg-orange-500/20 p-1.5 rounded-full">
+<span class="material-symbols-outlined text-orange-500 text-lg">currency_bitcoin</span>
+</div>
+<span class="text-white font-bold text-lg">BTC/USD</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-white text-2xl font-bold font-mono">$64,230.50</span>
+<span class="text-emerald-400 text-sm font-bold flex items-center bg-emerald-400/10 px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-sm mr-0.5">trending_up</span>
+                                        +1.24%
+                                    </span>
+</div>
+</div>
+<!-- Timeframes -->
+<div class="hidden sm:flex items-center gap-1 bg-[#101818] p-1 rounded-lg border border-[#2d3f3f]">
+<button class="w-10 h-8 rounded hover:bg-[#2d3f3f] text-[#9abcbc] text-xs font-bold transition-colors">15m</button>
+<button class="w-10 h-8 rounded bg-[#2d3f3f] text-white text-xs font-bold shadow-sm">1H</button>
+<button class="w-10 h-8 rounded hover:bg-[#2d3f3f] text-[#9abcbc] text-xs font-bold transition-colors">4H</button>
+<button class="w-10 h-8 rounded hover:bg-[#2d3f3f] text-[#9abcbc] text-xs font-bold transition-colors">1D</button>
+<button class="w-10 h-8 rounded hover:bg-[#2d3f3f] text-[#9abcbc] text-xs font-bold transition-colors">1W</button>
+<div class="w-px h-4 bg-[#2d3f3f] mx-1"></div>
+<button class="px-3 h-8 rounded hover:bg-[#2d3f3f] text-primary text-xs font-bold flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-sm">show_chart</span>
+                                    Indicators
+                                </button>
+</div>
+</div>
+<!-- Chart Content Placeholder -->
+<div class="flex-1 relative bg-[#151e1e] w-full">
+<!-- Y-Axis Price Labels (Simulated) -->
+<div class="absolute right-0 top-0 bottom-8 w-16 border-l border-[#2d3f3f] bg-[#1b2828] flex flex-col justify-between py-4 items-center z-10">
+<span class="text-[10px] text-[#5c7c7c] font-mono">$65,000</span>
+<span class="text-[10px] text-[#5c7c7c] font-mono">$64,500</span>
+<span class="text-[10px] text-white bg-primary px-1 rounded-sm font-mono">$64,230</span>
+<span class="text-[10px] text-[#5c7c7c] font-mono">$64,000</span>
+<span class="text-[10px] text-[#5c7c7c] font-mono">$63,500</span>
+</div>
+<!-- Background Grid -->
+<div class="absolute inset-0 z-0 bg-[linear-gradient(rgba(45,63,63,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(45,63,63,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+<!-- Main Chart Image -->
+<div class="absolute inset-0 right-16 bottom-8 z-0">
+<img class="w-full h-full object-cover opacity-60 mix-blend-screen grayscale-[0.2] contrast-125" data-alt="Detailed candlestick chart visualization showing upward trend followed by consolidation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1uwZrOcicgCh98LNvQghPApqDE79BEX5HABv4GVv9_HpXVyqluygc4cNAasWQHziNUCBMt_P7dqlWcC4zGVXSVGpCojFZUTNtthJ-F1UYl3wmqRMrWoFFeoe6PEb2Eiwu0Go81GwAeEREkP8FBdkGN3Wky3bqaxog_nm1H32oXxoeYTGCE3p0V6BjBm1Zh2RZmkE7ZcdzwIlXYqdDSGAy1uXepW6eZSql6wXpT2KbrbQ2bO8V6xsGcmnY_eLRiH19W_G8WyWF1Iq1"/>
+<!-- Overlay gradient to fade bottom/sides slightly -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#151e1e] via-transparent to-transparent opacity-50"></div>
+</div>
+<!-- Chart Overlay UI Elements -->
+<div class="absolute top-4 left-4 z-10 flex gap-2">
+<span class="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded text-xs font-bold">Resistance: $64.8k</span>
+<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded text-xs font-bold">Support: $63.2k</span>
+</div>
+<!-- X-Axis Time Labels -->
+<div class="absolute bottom-0 left-0 right-16 h-8 border-t border-[#2d3f3f] bg-[#1b2828] flex items-center justify-between px-8">
+<span class="text-[10px] text-[#5c7c7c]">10:00</span>
+<span class="text-[10px] text-[#5c7c7c]">11:00</span>
+<span class="text-[10px] text-[#5c7c7c]">12:00</span>
+<span class="text-[10px] text-[#5c7c7c]">13:00</span>
+<span class="text-[10px] text-[#5c7c7c]">14:00</span>
+<span class="text-[10px] text-[#5c7c7c]">15:00</span>
+<span class="text-[10px] text-[#5c7c7c]">16:00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Active Trades Table -->
+<div class="flex flex-col gap-3 pb-8">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-xl font-bold text-white">Open Positions</h3>
+<div class="flex gap-2">
+<button class="flex items-center gap-1 text-[#9abcbc] hover:text-white text-sm px-3 py-1.5 rounded hover:bg-[#1b2828] transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                                Filter
+                            </button>
+<button class="flex items-center gap-1 text-[#9abcbc] hover:text-white text-sm px-3 py-1.5 rounded hover:bg-[#1b2828] transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Export
+                            </button>
+</div>
+</div>
+<div class="bg-[#1b2828] rounded-xl border border-[#2d3f3f] overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-[#2d3f3f] text-[#9abcbc] text-xs uppercase tracking-wider">
+<th class="px-6 py-4 font-bold">Asset</th>
+<th class="px-6 py-4 font-bold">Type</th>
+<th class="px-6 py-4 font-bold text-right">Entry Price</th>
+<th class="px-6 py-4 font-bold text-right">Mark Price</th>
+<th class="px-6 py-4 font-bold text-right">P&amp;L (ROE%)</th>
+<th class="px-6 py-4 font-bold text-center">Status</th>
+<th class="px-6 py-4 font-bold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-[#2d3f3f]">
+<!-- Row 1 -->
+<tr class="group hover:bg-[#223030] transition-colors">
+<td class="px-6 py-4 text-white">
+<div class="flex items-center gap-3">
+<div class="bg-orange-500/10 p-2 rounded-lg text-orange-500">
+<span class="material-symbols-outlined">currency_bitcoin</span>
+</div>
+<div>
+<p class="font-bold">Bitcoin</p>
+<p class="text-[#9abcbc] text-xs font-mono">BTCUSDT</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            LONG 5x
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right text-white font-mono">$62,100.00</td>
+<td class="px-6 py-4 text-right text-[#9abcbc] font-mono">$64,230.50</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-emerald-400 font-bold font-mono">+$2,130.50</span>
+<span class="text-emerald-500/70 text-xs font-mono">+12.4%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+</span>
+<span class="text-white text-xs font-medium">Open</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-[#2d3f3f] rounded-lg text-[#9abcbc] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="px-3 py-1.5 bg-[#2d3f3f] hover:bg-red-500/20 hover:text-red-400 text-white rounded-lg text-xs font-bold transition-colors border border-transparent hover:border-red-500/30">
+                                                Close
+                                            </button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-[#223030] transition-colors">
+<td class="px-6 py-4 text-white">
+<div class="flex items-center gap-3">
+<div class="bg-blue-500/10 p-2 rounded-lg text-blue-500">
+<span class="material-symbols-outlined">diamond</span>
+</div>
+<div>
+<p class="font-bold">Ethereum</p>
+<p class="text-[#9abcbc] text-xs font-mono">ETHUSDT</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">
+                                            SHORT 10x
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right text-white font-mono">$3,150.00</td>
+<td class="px-6 py-4 text-right text-[#9abcbc] font-mono">$3,180.20</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-red-400 font-bold font-mono">-$302.00</span>
+<span class="text-red-500/70 text-xs font-mono">-3.2%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+<span class="text-white text-xs font-medium">Open</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-[#2d3f3f] rounded-lg text-[#9abcbc] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="px-3 py-1.5 bg-[#2d3f3f] hover:bg-red-500/20 hover:text-red-400 text-white rounded-lg text-xs font-bold transition-colors border border-transparent hover:border-red-500/30">
+                                                Close
+                                            </button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-[#223030] transition-colors">
+<td class="px-6 py-4 text-white">
+<div class="flex items-center gap-3">
+<div class="bg-purple-500/10 p-2 rounded-lg text-purple-500">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<p class="font-bold">Solana</p>
+<p class="text-[#9abcbc] text-xs font-mono">SOLUSDT</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            LONG 2x
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right text-white font-mono">$145.00</td>
+<td class="px-6 py-4 text-right text-[#9abcbc] font-mono">$148.50</td>
+<td class="px-6 py-4 text-right">
+<div class="flex flex-col items-end">
+<span class="text-emerald-400 font-bold font-mono">+$70.00</span>
+<span class="text-emerald-500/70 text-xs font-mono">+4.1%</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="flex items-center justify-center gap-1.5">
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+<span class="text-white text-xs font-medium">Open</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-[#2d3f3f] rounded-lg text-[#9abcbc] hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="px-3 py-1.5 bg-[#2d3f3f] hover:bg-red-500/20 hover:text-red-400 text-white rounded-lg text-xs font-bold transition-colors border border-transparent hover:border-red-500/30">
+                                                Close
+                                            </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Empty State / Pagination (Visual Only) -->
+<div class="px-6 py-4 border-t border-[#2d3f3f] flex items-center justify-between text-xs text-[#9abcbc]">
+<span>Showing 3 of 3 active positions</span>
+<div class="flex gap-2">
+<button class="p-1 rounded hover:bg-[#2d3f3f] disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-1 rounded hover:bg-[#2d3f3f] disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

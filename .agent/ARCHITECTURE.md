@@ -1,0 +1,234 @@
+> **MANDATORIO: Siempre responde en ESPAÑOL**
+
+# Arquitectura de Thomas (V5.0)
+
+Thomas es un sistema de asistencia modular diseñado para un único usuario, integrando trading, salud y chat con memoria vectorial RAG.
+
+---
+
+## ðŸ“‹ Overview
+
+Antigravity Kit is a modular system consisting of:
+- **16 Specialist Agents** - Role-based AI personas
+- **40 Skills** - Domain-specific knowledge modules
+- **11 Workflows** - Slash command procedures
+
+### Thomas Logic Flows
+- **Health Discovery**: AI-driven onboarding for health data acquisition.
+- **Bio-Profile**: Programmatic tracking of body composition (anthropometry) via `actions/anthropometry.ts`.
+- **Agentic Trading**: Automated decision-making and execution with XAI justifications.
+- **RAG Engine**: Long-term memory and context retrieval for personalized assistance.
+
+---
+
+## ðŸ—ï¸ Directory Structure
+
+```
+.agent/
+â”œâ”€â”€ ARCHITECTURE.md          # This file
+â”œâ”€â”€ agents/                  # 16 Specialist Agents
+â”œâ”€â”€ skills/                  # 40 Skills
+â”œâ”€â”€ workflows/               # 11 Slash Commands
+â”œâ”€â”€ rules/                   # Global Rules
+â””â”€â”€ .shared/                 # Shared Resources
+```
+
+---
+
+## ðŸ¤– Agents (16)
+
+Specialist AI personas for different domains.
+
+| Agent | Focus | Skills Used |
+|-------|-------|-------------|
+| `orchestrator` | Multi-agent coordination | parallel-agents, behavioral-modes |
+| `project-planner` | Discovery, task planning | brainstorming, plan-writing, architecture |
+| `frontend-specialist` | Web UI/UX | frontend-design, react-patterns, tailwind-patterns |
+| `backend-specialist` | API, business logic | api-patterns, nodejs-best-practices, database-design |
+| `database-architect` | Schema, SQL | database-design, prisma-expert |
+| `mobile-developer` | iOS, Android, RN | mobile-design |
+| `game-developer` | Game logic, mechanics | game-development |
+| `devops-engineer` | CI/CD, Docker | deployment-procedures, docker-expert |
+| `security-auditor` | Security compliance | vulnerability-scanner, red-team-tactics |
+| `penetration-tester` | Offensive security | red-team-tactics |
+| `test-engineer` | Testing strategies | testing-patterns, tdd-workflow, webapp-testing |
+| `debugger` | Root cause analysis | systematic-debugging |
+| `performance-optimizer` | Speed, Web Vitals | performance-profiling |
+| `seo-specialist` | Ranking, visibility | seo-fundamentals, geo-fundamentals |
+| `documentation-writer` | Manuals, docs | documentation-templates |
+| `explorer-agent` | Codebase analysis | - |
+
+---
+
+## ðŸ§  Skills (40)
+
+Domain-specific knowledge modules. Skills are loaded on-demand based on task context.
+
+### Frontend & UI
+| Skill | Description |
+|-------|-------------|
+| `react-patterns` | React hooks, state, performance |
+| `nextjs-best-practices` | App Router, Server Components |
+| `tailwind-patterns` | Tailwind CSS v4 utilities |
+| `frontend-design` | UI/UX patterns, design systems |
+| `ui-ux-pro-max` | 50 styles, 21 palettes, 50 fonts |
+
+### Backend & API
+| Skill | Description |
+|-------|-------------|
+| `api-patterns` | REST, GraphQL, tRPC |
+| `nestjs-expert` | NestJS modules, DI, decorators |
+| `nodejs-best-practices` | Node.js async, modules |
+| `python-patterns` | Python standards, FastAPI |
+
+### Database
+| Skill | Description |
+|-------|-------------|
+| `database-design` | Schema design, optimization |
+| `prisma-expert` | Prisma ORM, migrations |
+
+### TypeScript/JavaScript
+| Skill | Description |
+|-------|-------------|
+| `typescript-expert` | Type-level programming, performance |
+
+### Cloud & Infrastructure
+| Skill | Description |
+|-------|-------------|
+| `docker-expert` | Containerization, Compose |
+| `deployment-procedures` | CI/CD, deploy workflows |
+| `server-management` | Infrastructure management |
+
+### Testing & Quality
+| Skill | Description |
+|-------|-------------|
+| `testing-patterns` | Jest, Vitest, strategies |
+| `webapp-testing` | E2E, Playwright |
+| `tdd-workflow` | Test-driven development |
+| `code-review-checklist` | Code review standards |
+| `lint-and-validate` | Linting, validation |
+
+### Security
+| Skill | Description |
+|-------|-------------|
+| `vulnerability-scanner` | Security auditing, OWASP |
+| `red-team-tactics` | Offensive security |
+
+### Architecture & Planning
+| Skill | Description |
+|-------|-------------|
+| `app-builder` | Full-stack app scaffolding |
+| `architecture` | System design patterns |
+| `plan-writing` | Task planning, breakdown |
+| `brainstorming` | Socratic questioning |
+
+### Mobile
+| Skill | Description |
+|-------|-------------|
+| `mobile-design` | Mobile UI/UX patterns |
+
+### Game Development
+| Skill | Description |
+|-------|-------------|
+| `game-development` | Game logic, mechanics |
+
+### SEO & Growth
+| Skill | Description |
+|-------|-------------|
+| `seo-fundamentals` | SEO, E-E-A-T, Core Web Vitals |
+| `geo-fundamentals` | GenAI optimization |
+
+### Shell/CLI
+| Skill | Description |
+|-------|-------------|
+| `bash-linux` | Linux commands, scripting |
+| `powershell-windows` | Windows PowerShell |
+
+### Other
+| Skill | Description |
+|-------|-------------|
+| `clean-code` | Coding standards (Global) |
+| `behavioral-modes` | Agent personas |
+| `parallel-agents` | Multi-agent patterns |
+| `mcp-builder` | Model Context Protocol |
+| `documentation-templates` | Doc formats |
+| `i18n-localization` | Internationalization |
+| `performance-profiling` | Web Vitals, optimization |
+| `systematic-debugging` | Troubleshooting |
+
+---
+
+## ðŸ”„ Workflows (11)
+
+Slash command procedures. Invoke with `/command`.
+
+| Command | Description |
+|---------|-------------|
+| `/brainstorm` | Lluvia de ideas estructurada |
+| `/create` | Crear nuevas funcionalidades |
+| `/debug` | Depurar problemas |
+| `/deploy` | Desplegar aplicación |
+| `/enhance` | Mejorar código existente |
+| `/orchestrate` | Coordinación multi-agente |
+| `/plan` | Desglose de tareas |
+| `/preview` | Previsualizar cambios |
+| `/status` | Comprobar estado del proyecto |
+| `/test` | Ejecutar pruebas |
+| `/ui-ux-pro-max` | Diseño con 50 estilos |
+
+---
+
+## ðŸŽ¯ Skill Loading Protocol
+
+```
+User Request â†’ Skill Description Match â†’ Load SKILL.md
+                                            â†“
+                                    Read references/
+                                            â†“
+                                    Read scripts/
+```
+
+### Skill Structure
+
+```
+skill-name/
+â”œâ”€â”€ SKILL.md           # (Required) Metadata & instructions
+â”œâ”€â”€ scripts/           # (Optional) Python/Bash scripts
+â”œâ”€â”€ references/        # (Optional) Templates, docs
+â””â”€â”€ assets/            # (Optional) Images, logos
+```
+
+### Enhanced Skills (with scripts/references)
+
+| Skill | Files | Coverage |
+|-------|-------|----------|
+| `typescript-expert` | 5 | Utility types, tsconfig, cheatsheet |
+| `ui-ux-pro-max` | 27 | 50 styles, 21 palettes, 50 fonts |
+| `app-builder` | 20 | Full-stack scaffolding |
+
+---
+
+## ðŸ“Š Statistics
+
+| Metric | Value |
+|--------|-------|
+| **Total Agents** | 16 |
+| **Total Skills** | 40 |
+| **Total Workflows** | 11 |
+| **Coverage** | ~90% web/mobile development |
+
+---
+
+## ðŸ”— Quick Reference
+
+| Need | Agent | Skills |
+|------|-------|--------|
+| Web App | `frontend-specialist` | react-patterns, nextjs-best-practices |
+| API | `backend-specialist` | api-patterns, nodejs-best-practices |
+| Mobile | `mobile-developer` | mobile-design |
+| Database | `database-architect` | database-design, prisma-expert |
+| Security | `security-auditor` | vulnerability-scanner |
+| Testing | `test-engineer` | testing-patterns, webapp-testing |
+| Debug | `debugger` | systematic-debugging |
+| Plan | `project-planner` | brainstorming, plan-writing |
+

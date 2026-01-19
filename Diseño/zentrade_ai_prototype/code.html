@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ZenTrade AI Prototype</title>
+    
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- React Router -->
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Noto+Sans:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007a7a",
+              "primary-dark": "#005a5a",
+              "primary-hover": "#006666",
+              "background-light": "#f7f7f7",
+              "background-dark": "#0d0d0d",
+              "surface-dark": "#161616",
+              "surface-light": "#1a1a1a",
+              "surface-darker": "#111111",
+              "border-dark": "#27272a",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+              "mono": ["JetBrains Mono", "monospace"],
+            },
+            borderRadius: {
+                "DEFAULT": "0.5rem",
+                "lg": "0.75rem",
+                "xl": "1rem",
+                "2xl": "1rem",
+                "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Manrope', sans-serif;
+            overflow: hidden; /* App feels like native app */
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d0d0d; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #007a7a; 
+        }
+        
+        .glass-panel {
+            background: rgba(22, 22, 22, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .ai-glow {
+            box-shadow: 0 0 20px -5px rgba(0, 122, 122, 0.15);
+        }
+
+        .timer-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #007a7a;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #007a7a;
+        }
+        
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #2a35351a 1px, transparent 1px),
+                              linear-gradient(to bottom, #2a35351a 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white antialiased h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // Destructuring required globals
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // --- Common Components ---
+
+        // Shared Sidebar Component (adapted to fit all screens logically)
+        const Sidebar = () => {
+            const location = useLocation();
+            const isActive = (path) => location.pathname === path;
+
+            return (
+                <aside className="w-64 h-full bg-[#101010] border-r border-border-dark flex flex-col justify-between shrink-0 z-20 hidden md:flex">
+                    <div className="p-6">
+                        <div className="flex items-center gap-3 mb-10">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-black flex items-center justify-center border border-primary/30 shadow-[0_0_15px_-3px_rgba(0,122,122,0.4)]">
+                                <span className="material-symbols-outlined text-white" style={{fontSize: '24px'}}>psychology</span>
+                            </div>
+                            <div>
+                                <h1 className="text-lg font-bold leading-none tracking-tight">ZenTrade AI</h1>
+                                <p className="text-xs text-gray-400 font-medium">Pro Assistant</p>
+                            </div>
+                        </div>
+                        <nav className="flex flex-col gap-1">
+                            <Link to="/" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive('/') ? 'bg-primary/10 border border-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                                <span className={`material-symbols-outlined ${isActive('/') ? 'text-primary' : ''}`}>dashboard</span>
+                                <span className="text-sm font-medium">Dashboard</span>
+                            </Link>
+                            <Link to="/trades" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive('/trades') ? 'bg-primary/10 border border-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                                <span className={`material-symbols-outlined ${isActive('/trades') ? 'text-primary' : ''}`}>candlestick_chart</span>
+                                <span className="text-sm font-medium">Trades</span>
+                            </Link>
+                            <Link to="/assistant" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive('/assistant') ? 'bg-primary/10 border border-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                                <span className={`material-symbols-outlined ${isActive('/assistant') ? 'text-primary' : ''}`}>smart_toy</span>
+                                <span className="text-sm font-medium">AI Assistant</span>
+                            </Link>
+                            <Link to="/wellness" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive('/wellness') ? 'bg-primary/10 border border-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                                <span className={`material-symbols-outlined ${isActive('/wellness') ? 'text-primary' : ''}`}>self_improvement</span>
+                                <span className="text-sm font-medium">Wellness</span>
+                            </Link>
+                        </nav>
+                    </div>
+                    <div className="p-6">
+                        <div className="flex flex-col gap-1 border-t border-border-dark pt-4">
+                            <Link to="/settings" className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive('/settings') ? 'bg-primary/10 border border-primary/20 text-white' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
+                                <span className="material-symbols-outlined">settings</span>
+                                <span className="text-sm font-medium">Settings</span>
+                            </Link>
+                            <div className="flex items-center gap-3 px-4 py-3 mt-2 rounded-lg bg-surface-dark border border-border-dark">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-gray-700 to-gray-600 flex items-center justify-center text-xs font-bold text-white">JD</div>
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-white">John Doe</span>
+                                    <span className="text-[10px] text-gray-400">Pro Plan</span>
+                                </div>
+                                <button className="ml-auto text-gray-500 hover:text-white">
+                                    <span className="material-symbols-outlined" style={{fontSize: '18px'}}>logout</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            );
+        };
+
+
+        // --- Screen 1: Dashboard Overview ---
+        const DashboardScreen = () => {
+            return (
+                <div className="flex h-screen w-full">
+                    <Sidebar />
+                    <main className="flex-1 h-full overflow-y-auto bg-background-dark relative">
+                        {/* Background Gradients */}
+                        <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none z-0"></div>
+                        <div className="relative z-10 max-w-[1400px] mx-auto p-8 md:p-12 flex flex-col gap-8">
+                            {/* Header */}
+                            <header className="flex flex-wrap items-end justify-between gap-4">
+                                <div>
+                                    <h2 className="text-3xl font-bold tracking-tight text-white mb-2">Dashboard Overview</h2>
+                                    <div className="flex items-center gap-3 text-sm text-gray-400">
+                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Market Open
+                                        </span>
+                                        <span className="text-gray-600">|</span>
+                                        <span>Wednesday, Oct 24</span>
+                                    </div>
+                                </div>
+                                {/* Wellness Score Badge */}
+                                <div className="flex items-center gap-4 bg-surface-dark border border-border-dark p-2 pr-6 rounded-full cursor-pointer hover:bg-white/5 transition-colors">
+                                    <Link to="/wellness" className="flex items-center gap-4">
+                                        <div className="relative w-10 h-10 flex items-center justify-center">
+                                            <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 36 36">
+                                                <path className="text-gray-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="4"></path>
+                                                <path className="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray="92, 100" strokeWidth="4"></path>
+                                            </svg>
+                                            <span className="absolute text-[10px] font-bold">92</span>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-semibold text-white">Wellness Score</span>
+                                            <span className="text-[10px] text-gray-400">Mental State: Peak Flow</span>
+                                        </div>
+                                    </Link>
+                                </div>
+                            </header>
+                            
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {[
+                                    { label: 'Portfolio Value', value: '$1,150.00', change: '+1.2%', icon: 'account_balance_wallet' },
+                                    { label: 'Daily P&L', value: '+$23.50', change: '+5.4%', icon: 'payments' },
+                                    { label: 'Active Trades', value: '3', sub: '2 Long, 1 Short', icon: 'bolt' },
+                                    { label: 'Win Rate', value: '68%', change: '+2%', icon: 'trophy' }
+                                ].map((stat, i) => (
+                                    <div key={i} className="p-5 rounded-xl bg-surface-dark border border-border-dark hover:border-primary/30 transition-colors group">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <p className="text-gray-400 text-sm font-medium">{stat.label}</p>
+                                            <span className="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors text-lg">{stat.icon}</span>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-white tracking-tight mb-1">{stat.value}</h3>
+                                        {stat.change && (
+                                            <div className="flex items-center gap-1 text-emerald-500 text-xs font-medium">
+                                                <span className="material-symbols-outlined text-sm">trending_up</span>
+                                                <span>{stat.change}</span>
+                                                <span className="text-gray-500 ml-1">vs yesterday</span>
+                                            </div>
+                                        )}
+                                        {stat.sub && (
+                                            <div className="flex items-center gap-1 text-gray-400 text-xs font-medium">
+                                                <span>{stat.sub}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Main Grid: Suggestions & Charts */}
+                            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                                {/* Pending AI Suggestions (2/3 width) */}
+                                <div className="xl:col-span-3 flex flex-col gap-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xl font-bold text-white">Pending AI Suggestions</h3>
+                                        <Link to="/assistant" className="text-xs text-primary hover:text-white transition-colors flex items-center gap-1">
+                                            View History <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                        </Link>
+                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                        {/* Card 1: BTC */}
+                                        <div className="p-5 rounded-xl bg-surface-light border border-primary/30 ai-glow flex flex-col sm:flex-row gap-5 relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                                            <div className="flex-1 flex flex-col justify-between gap-4">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-[#f7931a]/20 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-[#f7931a]">currency_bitcoin</span>
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="font-bold text-white">BTC/USD</h4>
+                                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 uppercase tracking-wider">Long</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-400 mt-0.5">Entry: $34,250 - $34,400</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-2xl font-bold text-primary">88%</span>
+                                                        <span className="text-[10px] text-gray-500 uppercase font-semibold">Confidence</span>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-black/40 rounded-lg p-3 border border-white/5">
+                                                    <div className="flex items-start gap-2">
+                                                        <span className="material-symbols-outlined text-primary text-sm mt-0.5">auto_awesome</span>
+                                                        <p className="text-sm text-gray-300 leading-relaxed"><span className="text-primary font-semibold">Logic:</span> RSI divergence detected on 4H timeframe coupled with a significant volume spike. Local resistance flip anticipated.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <button className="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                                                        <span className="material-symbols-outlined text-lg">check</span> Approve
+                                                    </button>
+                                                    <button className="flex-1 bg-transparent border border-gray-700 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 text-gray-400 text-sm font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all">
+                                                        <span className="material-symbols-outlined text-lg">close</span> Reject
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Card 2: ETH */}
+                                        <div className="p-5 rounded-xl bg-surface-dark border border-border-dark hover:border-gray-600 transition-colors flex flex-col sm:flex-row gap-5 group">
+                                            <div className="flex-1 flex flex-col justify-between gap-4">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-[#627eea]/20 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-[#627eea]">token</span>
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="font-bold text-white">ETH/USD</h4>
+                                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 uppercase tracking-wider">Short</span>
+                                                            </div>
+                                                            <p className="text-xs text-gray-400 mt-0.5">Entry: $1,980 - $2,000</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-2xl font-bold text-gray-300">72%</span>
+                                                        <span className="text-[10px] text-gray-500 uppercase font-semibold">Confidence</span>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-black/20 rounded-lg p-3 border border-white/5">
+                                                    <div className="flex items-start gap-2">
+                                                        <span className="material-symbols-outlined text-gray-500 text-sm mt-0.5">psychology</span>
+                                                        <p className="text-sm text-gray-400 leading-relaxed"><span className="text-gray-300 font-semibold">Logic:</span> Multiple rejections at key $2k psychological resistance. Moving averages crossing bearish.</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <button className="flex-1 bg-primary hover:bg-primary-dark text-white text-sm font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                                                        <span className="material-symbols-outlined text-lg">check</span> Approve
+                                                    </button>
+                                                    <button className="flex-1 bg-transparent border border-gray-700 hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 text-gray-400 text-sm font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all">
+                                                        <span className="material-symbols-outlined text-lg">close</span> Reject
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Bottom Section: Chart & Table */}
+                                <div className="xl:col-span-3 grid grid-cols-1 xl:grid-cols-3 gap-6">
+                                    {/* Chart Section */}
+                                    <div className="xl:col-span-2 p-6 rounded-xl bg-surface-dark border border-border-dark flex flex-col h-[400px]">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white">Performance</h3>
+                                                <p className="text-xs text-gray-400">Net Profit Last 30 Days</p>
+                                            </div>
+                                            <div className="flex bg-black/30 rounded-lg p-1">
+                                                <button className="px-3 py-1 text-xs font-medium text-white bg-primary/20 rounded">30D</button>
+                                                <button className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-white transition-colors">1W</button>
+                                                <button className="px-3 py-1 text-xs font-medium text-gray-500 hover:text-white transition-colors">1Y</button>
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 w-full relative">
+                                            <div className="absolute inset-0 flex flex-col justify-between text-xs text-gray-600 font-mono pointer-events-none">
+                                                <div className="border-b border-gray-800 w-full h-0 flex items-center"><span className="bg-surface-dark pr-2 z-10">$1500</span></div>
+                                                <div className="border-b border-gray-800 w-full h-0 flex items-center"><span className="bg-surface-dark pr-2 z-10">$1000</span></div>
+                                                <div className="border-b border-gray-800 w-full h-0 flex items-center"><span className="bg-surface-dark pr-2 z-10">$500</span></div>
+                                                <div className="border-b border-gray-800 w-full h-0 flex items-center"><span className="bg-surface-dark pr-2 z-10">$0</span></div>
+                                            </div>
+                                            <svg className="absolute inset-0 w-full h-full pt-3 pl-10" preserveAspectRatio="none" viewBox="0 0 100 100">
+                                                <defs>
+                                                    <linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                                                        <stop offset="0%" style={{stopColor:'#007a7a', stopOpacity:0.3}}></stop>
+                                                        <stop offset="100%" style={{stopColor:'#007a7a', stopOpacity:0}}></stop>
+                                                    </linearGradient>
+                                                </defs>
+                                                <path d="M0,80 Q10,75 20,60 T40,55 T60,40 T80,45 T100,20 V100 H0 Z" fill="url(#chartGradient)"></path>
+                                                <path d="M0,80 Q10,75 20,60 T40,55 T60,40 T80,45 T100,20" fill="none" stroke="#007a7a" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
+                                                <circle cx="60" cy="40" fill="#fff" r="1.5" stroke="#007a7a" strokeWidth="0.5"></circle>
+                                            </svg>
+                                            <div className="absolute left-[60%] top-[30%] -translate-x-1/2 -translate-y-full mb-2 bg-gray-800 text-white text-[10px] py-1 px-2 rounded border border-gray-700 shadow-xl z-20 whitespace-nowrap">
+                                                Oct 15: $1,240.50
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Recent Trades Table */}
+                                    <div className="xl:col-span-1 p-0 rounded-xl bg-surface-dark border border-border-dark flex flex-col overflow-hidden h-[400px]">
+                                        <div className="p-6 pb-4 border-b border-border-dark flex justify-between items-center bg-surface-dark">
+                                            <h3 className="text-lg font-bold text-white">Recent Trades</h3>
+                                            <Link to="/trades" className="p-1 hover:bg-white/5 rounded transition-colors text-gray-400">
+                                                <span className="material-symbols-outlined text-lg">open_in_new</span>
+                                            </Link>
+                                        </div>
+                                        <div className="overflow-y-auto flex-1 p-2">
+                                            <table className="w-full text-left text-sm border-separate border-spacing-y-1">
+                                                <thead className="text-xs text-gray-500 font-medium">
+                                                    <tr>
+                                                        <th className="px-4 py-2 font-medium">Asset</th>
+                                                        <th className="px-4 py-2 font-medium">Price</th>
+                                                        <th className="px-4 py-2 font-medium text-right">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="text-sm">
+                                                    <tr className="group">
+                                                        <td className="px-4 py-3 bg-white/[0.02] rounded-l-lg border-l-2 border-transparent group-hover:border-primary">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                                <span className="font-bold text-white">SOL</span>
+                                                                <span className="text-[10px] text-gray-500">Buy</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 bg-white/[0.02] text-gray-300">$22.50</td>
+                                                        <td className="px-4 py-3 bg-white/[0.02] rounded-r-lg text-right">
+                                                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-primary/20 text-primary border border-primary/20">Open</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="group">
+                                                        <td className="px-4 py-3 bg-white/[0.02] rounded-l-lg border-l-2 border-transparent group-hover:border-primary">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                                                <span className="font-bold text-white">AAPL</span>
+                                                                <span className="text-[10px] text-gray-500">Sell</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 bg-white/[0.02] text-gray-300">$175.00</td>
+                                                        <td className="px-4 py-3 bg-white/[0.02] rounded-r-lg text-right">
+                                                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-gray-700/50 text-gray-400 border border-gray-700">Closed</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        // --- Screen 2: Trading Management ---
+        const TradeScreen = () => {
+            return (
+                <div className="flex h-screen w-full overflow-hidden bg-background-dark">
+                    <Sidebar />
+                    <main className="flex-1 flex flex-col h-full bg-background-dark relative overflow-y-auto overflow-x-hidden">
+                         {/* Mobile Header */}
+                        <div className="md:hidden flex items-center justify-between p-4 border-b border-[#2d3f3f] bg-[#101818]">
+                            <h1 className="text-white font-bold">Trader AI</h1>
+                            <button className="text-white p-2">
+                                <span className="material-symbols-outlined">menu</span>
+                            </button>
+                        </div>
+                        <div className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-8 flex flex-col gap-6">
+                            {/* Page Header & Tabs */}
+                            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2 border-b border-[#2d3f3f]">
+                                <div className="flex flex-col gap-2">
+                                    <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Trading Management</h2>
+                                    <div className="flex items-center gap-2 text-[#9abcbc]">
+                                        <span className="material-symbols-outlined text-sm">smart_toy</span>
+                                        <p className="text-sm font-medium">AI Assistant is monitoring 12 active signals.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1 bg-[#1b2828] p-1 rounded-lg border border-[#2d3f3f]">
+                                    <button className="px-6 py-2 rounded-md bg-[#2d3f3f] text-white shadow-sm text-sm font-bold transition-all">Active Trades</button>
+                                    <button className="px-6 py-2 rounded-md hover:bg-white/5 text-[#9abcbc] hover:text-white text-sm font-medium transition-all">History</button>
+                                </div>
+                            </div>
+
+                            {/* AI Insight Widget */}
+                            <div className="bg-gradient-to-r from-[#1b2828] to-[#101818] rounded-xl border border-[#2d3f3f] p-4 flex items-start gap-4 shadow-sm relative overflow-hidden group">
+                                <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/10 to-transparent pointer-events-none"></div>
+                                <div className="bg-primary/20 p-2 rounded-lg text-primary shrink-0">
+                                    <span className="material-symbols-outlined">psychology</span>
+                                </div>
+                                <div className="flex flex-col gap-1 z-10">
+                                    <h4 className="text-white text-sm font-bold">Market Sentiment Analysis</h4>
+                                    <p className="text-[#9abcbc] text-sm">Bitcoin volatility is unusually low (1.2%). The AI model suggests consolidating profits.</p>
+                                </div>
+                                <button className="ml-auto text-white/50 hover:text-white self-start">
+                                    <span className="material-symbols-outlined text-sm">close</span>
+                                </button>
+                            </div>
+
+                            {/* Main Chart Section */}
+                            <div className="flex flex-col gap-4">
+                                <div className="bg-[#1b2828] rounded-xl border border-[#2d3f3f] shadow-xl overflow-hidden flex flex-col h-[500px]">
+                                    <div className="flex items-center justify-between p-4 border-b border-[#2d3f3f] bg-[#1b2828]">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="bg-orange-500/20 p-1.5 rounded-full">
+                                                    <span className="material-symbols-outlined text-orange-500 text-lg">currency_bitcoin</span>
+                                                </div>
+                                                <span className="text-white font-bold text-lg">BTC/USD</span>
+                                            </div>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-white text-2xl font-bold font-mono">$64,230.50</span>
+                                                <span className="text-emerald-400 text-sm font-bold flex items-center bg-emerald-400/10 px-1.5 py-0.5 rounded">
+                                                    <span className="material-symbols-outlined text-sm mr-0.5">trending_up</span>
+                                                    +1.24%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="hidden sm:flex items-center gap-1 bg-[#101818] p-1 rounded-lg border border-[#2d3f3f]">
+                                            <button className="w-10 h-8 rounded bg-[#2d3f3f] text-white text-xs font-bold shadow-sm">1H</button>
+                                            <button className="w-10 h-8 rounded hover:bg-[#2d3f3f] text-[#9abcbc] text-xs font-bold transition-colors">4H</button>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 relative bg-[#151e1e] w-full">
+                                        {/* Simulated Chart */}
+                                        <div className="absolute inset-0 z-0 bg-[linear-gradient(rgba(45,63,63,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(45,63,63,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                                        <img className="w-full h-full object-cover opacity-60 mix-blend-screen grayscale-[0.2] contrast-125 absolute inset-0 right-16 bottom-8" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1uwZrOcicgCh98LNvQghPApqDE79BEX5HABv4GVv9_HpXVyqluygc4cNAasWQHziNUCBMt_P7dqlWcC4zGVXSVGpCojFZUTNtthJ-F1UYl3wmqRMrWoFFeoe6PEb2Eiwu0Go81GwAeEREkP8FBdkGN3Wky3bqaxog_nm1H32oXxoeYTGCE3p0V6BjBm1Zh2RZmkE7ZcdzwIlXYqdDSGAy1uXepW6eZSql6wXpT2KbrbQ2bO8V6xsGcmnY_eLRiH19W_G8WyWF1Iq1"/>
+                                        <div className="absolute top-4 left-4 z-10 flex gap-2">
+                                            <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded text-xs font-bold">Resistance: $64.8k</span>
+                                            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded text-xs font-bold">Support: $63.2k</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Active Trades Table */}
+                            <div className="flex flex-col gap-3 pb-8">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className="text-xl font-bold text-white">Open Positions</h3>
+                                    <div className="flex gap-2">
+                                        <button className="flex items-center gap-1 text-[#9abcbc] hover:text-white text-sm px-3 py-1.5 rounded hover:bg-[#1b2828] transition-colors">
+                                            <span className="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="bg-[#1b2828] rounded-xl border border-[#2d3f3f] overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-[#2d3f3f] text-[#9abcbc] text-xs uppercase tracking-wider">
+                                                <th className="px-6 py-4 font-bold">Asset</th>
+                                                <th className="px-6 py-4 font-bold">Type</th>
+                                                <th className="px-6 py-4 font-bold text-right">Entry Price</th>
+                                                <th className="px-6 py-4 font-bold text-right">P&L (ROE%)</th>
+                                                <th className="px-6 py-4 font-bold text-center">Status</th>
+                                                <th className="px-6 py-4 font-bold text-right">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-sm divide-y divide-[#2d3f3f]">
+                                            <tr className="group hover:bg-[#223030] transition-colors">
+                                                <td className="px-6 py-4 text-white">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="bg-orange-500/10 p-2 rounded-lg text-orange-500">
+                                                            <span className="material-symbols-outlined">currency_bitcoin</span>
+                                                        </div>
+                                                        <div><p className="font-bold">Bitcoin</p><p className="text-[#9abcbc] text-xs font-mono">BTCUSDT</p></div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4"><span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LONG 5x</span></td>
+                                                <td className="px-6 py-4 text-right text-white font-mono">$62,100.00</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-emerald-400 font-bold font-mono">+$2,130.50</span>
+                                                        <span className="text-emerald-500/70 text-xs font-mono">+12.4%</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <span className="relative flex h-2.5 w-2.5">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                                        </span>
+                                                        <span className="text-white text-xs font-medium">Open</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button className="px-3 py-1.5 bg-[#2d3f3f] hover:bg-red-500/20 hover:text-red-400 text-white rounded-lg text-xs font-bold transition-colors">Close</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+
+        // --- Screen 3: AI Assistant (Chat) ---
+        const AssistantScreen = () => {
+            return (
+                <div className="flex h-screen w-full bg-background-dark overflow-hidden">
+                    <Sidebar />
+                    <main className="flex-1 flex flex-col h-full min-w-0 bg-background-dark relative">
+                        {/* Top Header */}
+                        <header className="flex items-center justify-between px-8 py-4 border-b border-border-dark bg-background-dark z-20">
+                            <div className="flex items-center gap-3">
+                                <span className="material-symbols-outlined text-primary">forum</span>
+                                <h2 className="text-white text-lg font-bold tracking-tight">Market Analysis & Chat</h2>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-border-dark/50 border border-border-dark">
+                                    <div className="size-2 rounded-full bg-green-500 animate-pulse"></div>
+                                    <span className="text-xs font-medium text-[#9abcbc] uppercase tracking-wider">System Operational</span>
+                                </div>
+                            </div>
+                        </header>
+                        
+                        {/* Chat Area */}
+                        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scroll-smooth pb-32">
+                             <div className="flex flex-col items-center justify-center py-12 opacity-60">
+                                <p className="text-[#9abcbc] text-sm font-medium uppercase tracking-widest mb-2">Today, 10:42 AM</p>
+                                <div className="h-px w-24 bg-gradient-to-r from-transparent via-border-dark to-transparent"></div>
+                            </div>
+                            
+                            {/* AI Message */}
+                            <div className="flex gap-4 md:gap-6 max-w-4xl mr-auto group">
+                                <div className="shrink-0 flex flex-col items-center gap-2">
+                                    <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 shadow-lg shadow-primary/10 border border-border-dark" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD4Zz8-HtBH27f95xzUsO_UPBEMLL1sbDgc79DwTokAT6SMr-n97655ikZs7oewb8remjh2f-IgrbSX9VKemYJDDb6hXJYt3VljT0taCusAxWtgF0pOoyQQDWnXVw5TsgoNTlpBfPHmi6uHd6_iO41LBadBx5nmrGu0z4hLSKpy-WtE3LtVpD4ipIqBcGP5t7dvQoUmwGet2PmqRHgxGVV5DdWFnoJEGdRO3_bFc9nQ8WRd3dLRonmmzsON_lET_2Rh6uA1z0fbVl9O")'}}></div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-white text-sm font-bold">Nexus AI</span>
+                                        <span className="text-[#9abcbc] text-xs">10:42 AM</span>
+                                    </div>
+                                    <div className="bg-surface-dark border border-border-dark rounded-2xl rounded-tl-none p-5 md:p-6 text-gray-200 leading-relaxed shadow-sm relative">
+                                        <p className="mb-4">Good morning, Alex. Your portfolio is currently up <span className="text-green-400 font-bold font-mono">+2.4%</span> in the last 24 hours.</p>
+                                        <p className="mb-4">I've detected a significant movement in your ETH positions. The market sentiment has shifted to <span className="text-yellow-400 font-medium">Neutral-Bearish</span> based on the latest CPI data release.</p>
+                                        <div className="bg-background-dark rounded-lg p-4 border border-border-dark/50 flex flex-wrap gap-4 mb-2">
+                                            <div className="flex flex-col">
+                                                <span className="text-[#9abcbc] text-xs uppercase tracking-wider">ETH Price</span>
+                                                <span className="text-white font-mono font-bold">$2,840.50</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[#9abcbc] text-xs uppercase tracking-wider">RSI (4h)</span>
+                                                <span className="text-orange-400 font-mono font-bold">72.4 (High)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* User Message */}
+                             <div className="flex gap-4 md:gap-6 max-w-4xl ml-auto justify-end group">
+                                <div className="flex flex-col gap-2 items-end">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[#9abcbc] text-xs">10:45 AM</span>
+                                        <span className="text-white text-sm font-bold">You</span>
+                                    </div>
+                                    <div className="bg-primary text-white rounded-2xl rounded-tr-none px-6 py-4 shadow-lg shadow-primary/20 leading-relaxed">
+                                        <p>Why did you recommend selling ETH right now? Is it just the RSI?</p>
+                                    </div>
+                                </div>
+                                <div className="shrink-0 flex flex-col items-center gap-2">
+                                    <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-surface-dark" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCUFWaVtggXo0wmJ_jAMmZmE9e60Jv-3bOThQb7AbBbZ_4ex1FOcdPJwbHIlY9LtHmpGKRFRhQlLVo2fdRPE4Gva8eG_zjg4W_lGJMeGxMrCL6TxWeJwx-QL8oKzqzAAxF9yAGm7POh-2v-F9nhXlbnG5iV-aKCH-C_PzEPq_pkZIcNqdSAaHqeUk4jyrJPm__C4XtR_g-Z-QS54eYs8myzl4yKKREsO9IQljHKRyTqBCdd-TUcFwwA1CCaMwFFiNgs5oLGumQmjuRV")'}}></div>
+                                </div>
+                            </div>
+
+                             {/* AI Response */}
+                            <div className="flex gap-4 md:gap-6 max-w-4xl mr-auto group animate-fade-in-up">
+                                <div className="shrink-0 flex flex-col items-center gap-2">
+                                    <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-10 shadow-lg shadow-primary/10 border border-border-dark" style={{backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuC7WV_ddteU7kZOff9iHjePHmntWLpQKfGDLrO4wRtSNANZvAouN8ZlhvJqwgjuNUHHOj6Da2NB2dE6aG8zKEDAgolzhPxjwdGDwXctI45pAGyY2_zFOOqfRucDMVqnhRu0d3ml8qjLZ1mTQlRSq6G6qZPLFxelKQxopzrgZVZz7hmAZEYbCW9kHZgIEM4XkQ8dKIUX5jVzG1n1lmE6xfvM_cxRrVt2-GCdueajHUjezHP52DnMeb0YIZy2U_6hAqjZQ6MvlQ8jHnvz")'}}></div>
+                                </div>
+                                <div className="flex flex-col gap-2 w-full">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-white text-sm font-bold">Nexus AI</span>
+                                        <span className="text-[#9abcbc] text-xs">Just now</span>
+                                    </div>
+                                    <div className="bg-surface-dark border border-border-dark rounded-2xl rounded-tl-none p-6 text-gray-200 leading-relaxed shadow-sm">
+                                        <p className="mb-4">It's a combination of factors, not just RSI. While the RSI being over 70 indicates overbought conditions, my risk model also flagged:</p>
+                                        <ol className="list-decimal list-inside space-y-2 mb-4 text-[#cfd9d9]">
+                                            <li className="pl-2"><strong>Volume Divergence:</strong> Price is rising while trading volume is decreasing, often a sign of a reversal.</li>
+                                            <li className="pl-2"><strong>Macro Correlation:</strong> High correlation with tech stocks which are currently pulling back pre-market.</li>
+                                            <li className="pl-2"><strong>Resistance Level:</strong> We are hitting a major historical resistance at $2,850.</li>
+                                        </ol>
+                                        <p>Would you like me to simulate a scenario where we hold instead?</p>
+                                    </div>
+                                    <div className="flex gap-3 py-2 flex-wrap">
+                                        <button className="flex h-8 items-center justify-center gap-x-2 rounded-lg bg-border-dark/50 hover:bg-primary/20 border border-transparent hover:border-primary/30 px-4 transition-all">
+                                            <span className="text-white text-xs font-medium">Yes, simulate holding</span>
+                                        </button>
+                                        <button className="flex h-8 items-center justify-center gap-x-2 rounded-lg bg-border-dark/50 hover:bg-primary/20 border border-transparent hover:border-primary/30 px-4 transition-all">
+                                            <span className="text-white text-xs font-medium">Check BTC correlation</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                         {/* Input Area (Sticky Bottom) */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-background-dark/95 backdrop-blur-md border-t border-border-dark p-4 md:p-6 z-30">
+                            <div className="max-w-4xl mx-auto flex flex-col gap-3">
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
+                                    <div className="relative bg-surface-dark border border-border-dark rounded-xl flex items-end p-2 shadow-inner focus-within:border-primary/50 transition-colors">
+                                        <button className="p-2 mr-1 text-[#9abcbc] hover:text-white hover:bg-border-dark rounded-lg transition-colors shrink-0">
+                                            <span className="material-symbols-outlined">add_circle</span>
+                                        </button>
+                                        <textarea className="w-full bg-transparent border-none text-white placeholder-[#5a6b6b] resize-none focus:ring-0 py-3 max-h-48 text-base" rows="1" placeholder="Ask about your portfolio, market trends, or wellness..."></textarea>
+                                        <button className="flex items-center justify-center size-10 bg-primary hover:bg-primary/90 text-white rounded-lg shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 ml-1 mb-1">
+                                            <span className="material-symbols-outlined">arrow_upward</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+
+        // --- Screen 4: Wellness Tracker ---
+        const WellnessScreen = () => {
+             return (
+                <div className="flex h-screen w-full bg-background-dark overflow-hidden">
+                    <Sidebar />
+                    <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+                         <header className="flex items-center justify-between px-6 py-4 border-b border-border-dark bg-surface-darker/50 backdrop-blur-md z-10 sticky top-0">
+                            <div className="flex flex-col">
+                                <h2 className="text-white text-xl font-bold">Biometric Intelligence</h2>
+                                <p className="text-gray-500 text-xs">Syncing real-time with Oura Ring & Apple Health...</p>
+                            </div>
+                             <div className="flex gap-3">
+                                <button className="flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-surface-dark text-gray-400 hover:text-white transition-colors">
+                                    <span className="material-symbols-outlined">search</span>
+                                </button>
+                                <button className="flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-surface-dark text-gray-400 hover:text-white transition-colors relative">
+                                    <span className="material-symbols-outlined">notifications</span>
+                                    <span className="absolute top-2.5 right-2.5 size-2 bg-primary rounded-full border border-background-dark"></span>
+                                </button>
+                            </div>
+                        </header>
+
+                         <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 no-scrollbar">
+                            <div className="max-w-4xl mx-auto space-y-6">
+                                {/* Heading */}
+                                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-2">
+                                    <div className="space-y-2">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dark border border-border-dark">
+                                            <span className="relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                                            </span>
+                                            <span className="text-xs font-medium text-primary tracking-wide uppercase">Live Monitoring</span>
+                                        </div>
+                                        <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-white">Wellness Tracker</h1>
+                                        <p className="text-gray-400 max-w-lg">Monitor biological metrics alongside market performance to optimize decision fatigue.</p>
+                                    </div>
+                                </div>
+                                
+                                {/* Fasting Module */}
+                                <div className="bg-surface-darker rounded-2xl border border-border-dark overflow-hidden shadow-2xl relative">
+                                    <div className="absolute -top-40 -right-40 size-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+                                    <div className="flex border-b border-border-dark px-6 pt-4 gap-8">
+                                        <button className="flex flex-col items-center pb-4 border-b-2 border-primary group cursor-pointer outline-none focus:outline-none">
+                                            <span className="text-primary font-bold text-sm tracking-wide">Fasting</span>
+                                        </button>
+                                        <button className="flex flex-col items-center pb-4 border-b-2 border-transparent hover:border-gray-700 group cursor-pointer transition-all outline-none focus:outline-none">
+                                            <span className="text-gray-500 group-hover:text-gray-300 font-bold text-sm tracking-wide transition-colors">Stats</span>
+                                        </button>
+                                    </div>
+                                    <div className="p-8 lg:p-12 flex flex-col items-center relative z-0">
+                                         {/* Timer */}
+                                        <div className="relative size-72 lg:size-80 flex items-center justify-center mb-10">
+                                            <svg className="w-full h-full transform -rotate-90">
+                                                <circle className="text-surface-dark" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" strokeWidth="4"></circle>
+                                                <circle className="text-primary timer-circle drop-shadow-[0_0_10px_rgba(0,122,122,0.5)]" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" strokeDasharray="942" strokeDashoffset="235" strokeLinecap="round" strokeWidth="8"></circle>
+                                            </svg>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                                <span className="text-gray-500 text-sm font-medium tracking-widest uppercase mb-2">Elapsed Time</span>
+                                                <div className="font-display font-black text-6xl text-white tracking-tighter tabular-nums mb-1 drop-shadow-2xl">14:32:05</div>
+                                                <div className="flex items-center gap-2 text-primary/80 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                                                    <span className="material-symbols-outlined text-[16px]">bolt</span>
+                                                    <span className="text-xs font-bold">Autophagy Zone</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-4 mb-12 w-full max-w-xs">
+                                            <button className="w-full py-4 rounded-xl bg-surface-dark border border-border-dark text-white font-bold hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 transition-all group flex items-center justify-center gap-2">
+                                                <span className="material-symbols-outlined group-hover:animate-pulse">stop_circle</span> End Fast & Log
+                                            </button>
+                                            <p className="text-xs text-gray-500">Target: 16 Hours (TRF) • Ends at 18:00</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Insight Card */}
+                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                                    <div className="lg:col-span-3 bg-gradient-to-r from-surface-darker to-[#0F1515] p-6 rounded-2xl border border-border-dark flex gap-4 items-start relative overflow-hidden">
+                                        <div className="size-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-1">
+                                            <span className="material-symbols-outlined">auto_awesome</span>
+                                        </div>
+                                        <div className="z-10">
+                                            <h3 className="text-white font-bold text-lg mb-1">Correlation Insight</h3>
+                                            <p className="text-gray-400 text-sm leading-relaxed">Your cognitive energy levels consistently peak during the <span className="text-white font-semibold">14th hour</span> of your fast. Based on your trading history, you have a <span className="text-primary font-bold">+12%</span> higher win rate on trades executed during this window.</p>
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-1 bg-surface-darker p-6 rounded-2xl border border-border-dark flex flex-col justify-between">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <span className="text-xs text-gray-500 uppercase font-bold">Weight Trend</span>
+                                            <span className="text-emerald-400 text-xs font-bold flex items-center"><span className="material-symbols-outlined text-[14px]">arrow_drop_down</span> -0.4kg</span>
+                                        </div>
+                                        <div className="h-12 w-full flex items-end justify-between gap-1">
+                                            <div className="w-full bg-primary/20 h-[30%] rounded-sm"></div>
+                                            <div className="w-full bg-primary/40 h-[60%] rounded-sm"></div>
+                                            <div className="w-full bg-primary h-[65%] rounded-sm shadow-[0_0_10px_rgba(0,122,122,0.5)]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+             );
+        };
+
+
+        // --- Screen 5: Settings ---
+        const SettingsScreen = () => {
+            return (
+                <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-grid-pattern bg-background-dark text-white">
+                    <header className="sticky top-0 z-50 w-full border-b border-border-dark bg-background-dark/80 backdrop-blur-md">
+                        <div className="layout-container flex h-16 items-center justify-between px-6 lg:px-12">
+                             <div className="flex items-center gap-3 text-white">
+                                <div className="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
+                                    <span className="material-symbols-outlined text-xl">smart_toy</span>
+                                </div>
+                                <h2 className="text-lg font-bold tracking-tight">Nexus<span className="text-primary">AI</span></h2>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <Link to="/" className="text-gray-400 hover:text-white">
+                                    <span className="material-symbols-outlined">close</span>
+                                </Link>
+                            </div>
+                        </div>
+                    </header>
+                    <main className="flex-1 px-6 py-8 lg:px-12">
+                        <div className="mx-auto max-w-5xl">
+                             <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                                <div>
+                                    <h1 className="text-3xl font-extrabold tracking-tight text-white lg:text-4xl">Settings & API</h1>
+                                    <p className="mt-2 text-gray-400">Configure your assistant's trading behavior and external connections.</p>
+                                </div>
+                            </div>
+
+                            <div className="mb-8 border-b border-border-dark">
+                                <nav className="-mb-px flex space-x-8">
+                                    <button className="group inline-flex items-center border-b-2 border-primary px-1 py-4 text-sm font-medium text-primary">
+                                        <span className="material-symbols-outlined mr-2 text-[20px]">candlestick_chart</span> Trading
+                                    </button>
+                                    <button className="group inline-flex items-center border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-400 hover:text-gray-300">
+                                        <span className="material-symbols-outlined mr-2 text-[20px]">api</span> Profile & API
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <div className="grid gap-6 lg:grid-cols-12">
+                                <div className="lg:col-span-8 space-y-6">
+                                    {/* Risk Profile */}
+                                    <div className="rounded-xl border border-border-dark bg-surface-dark p-6 shadow-sm">
+                                        <div className="mb-6 flex items-center justify-between">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white">Risk Appetite</h3>
+                                                <p className="text-sm text-gray-400">Select the behavioral model for trade execution.</p>
+                                            </div>
+                                            <span className="material-symbols-outlined text-gray-500">psychology</span>
+                                        </div>
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                             <label className="relative cursor-pointer group">
+                                                <input className="peer sr-only" name="risk_profile" type="radio" value="conservative"/>
+                                                <div className="flex h-full flex-col justify-between rounded-lg border border-border-dark bg-background-dark p-4 transition-all hover:border-gray-500 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary">
+                                                    <div className="mb-3 rounded-md bg-emerald-500/10 p-2 w-fit text-emerald-400"><span className="material-symbols-outlined">shield</span></div>
+                                                    <div><p className="font-bold text-white">Conservative</p><p className="mt-1 text-xs text-gray-400">Low risk, steady growth.</p></div>
+                                                </div>
+                                            </label>
+                                            <label className="relative cursor-pointer group">
+                                                <input defaultChecked className="peer sr-only" name="risk_profile" type="radio" value="moderate"/>
+                                                <div className="flex h-full flex-col justify-between rounded-lg border border-border-dark bg-background-dark p-4 transition-all hover:border-gray-500 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary">
+                                                    <div className="mb-3 rounded-md bg-blue-500/10 p-2 w-fit text-blue-400"><span className="material-symbols-outlined">balance</span></div>
+                                                    <div><p className="font-bold text-white">Moderate</p><p className="mt-1 text-xs text-gray-400">Balanced approach.</p></div>
+                                                </div>
+                                            </label>
+                                            <label className="relative cursor-pointer group">
+                                                <input className="peer sr-only" name="risk_profile" type="radio" value="aggressive"/>
+                                                <div className="flex h-full flex-col justify-between rounded-lg border border-border-dark bg-background-dark p-4 transition-all hover:border-gray-500 peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:ring-1 peer-checked:ring-primary">
+                                                    <div className="mb-3 rounded-md bg-orange-500/10 p-2 w-fit text-orange-400"><span className="material-symbols-outlined">rocket_launch</span></div>
+                                                    <div><p className="font-bold text-white">Aggressive</p><p className="mt-1 text-xs text-gray-400">High risk, high reward.</p></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Parameters */}
+                                    <div className="rounded-xl border border-border-dark bg-surface-dark p-6 shadow-sm">
+                                        <div className="mb-6">
+                                            <h3 className="text-lg font-bold text-white">Parameters</h3>
+                                            <p className="text-sm text-gray-400">Set precise limits for automated actions.</p>
+                                        </div>
+                                        <div className="grid gap-6 md:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Max Amount Per Trade</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                                                    <input className="w-full rounded-lg border border-border-dark bg-background-dark p-2.5 pl-7 text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="0.00" type="number" defaultValue="1500"/>
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">USDT</span>
+                                                </div>
+                                            </div>
+                                             <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Daily Drawdown Limit</label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                                                    <input className="w-full rounded-lg border border-border-dark bg-background-dark p-2.5 pl-7 text-white placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="0.00" type="number" defaultValue="500"/>
+                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">USDT</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-4 space-y-6">
+                                    <div className="rounded-xl border border-primary/30 bg-gradient-to-b from-primary/10 to-transparent p-6 shadow-sm">
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white">Auto-Execution</h3>
+                                                <p className="text-sm text-gray-400 mt-1">Allow AI to place orders without confirmation.</p>
+                                            </div>
+                                            <div className="relative inline-block w-12 mr-2 align-middle select-none">
+                                                <input className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-600 transition-all duration-300 ease-in-out left-0 checked:left-[calc(100%-1.5rem)] checked:border-primary" id="toggle" name="toggle" type="checkbox"/>
+                                                <label className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer transition-colors duration-300 ease-in-out" htmlFor="toggle"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                     <div className="rounded-xl border border-border-dark bg-surface-dark p-6 shadow-sm">
+                                        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-500">Active Connections</h3>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between rounded-lg bg-background-dark p-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex size-8 items-center justify-center rounded-full bg-[#F3BA2F] text-black">
+                                                        <span className="material-symbols-outlined text-sm font-bold">currency_bitcoin</span>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-white">Binance</p>
+                                                        <p className="text-xs text-emerald-500">Connected</p>
+                                                    </div>
+                                                </div>
+                                                <span className="material-symbols-outlined text-gray-600 hover:text-white cursor-pointer">settings</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                     <div className="flex gap-3 pt-2">
+                                        <button className="flex-1 rounded-lg bg-primary py-3 px-4 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-hover hover:shadow-primary/40">
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        // --- Main App & Routing ---
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <Routes>
+                        <Route path="/" element={<DashboardScreen />} />
+                        <Route path="/trades" element={<TradeScreen />} />
+                        <Route path="/assistant" element={<AssistantScreen />} />
+                        <Route path="/wellness" element={<WellnessScreen />} />
+                        <Route path="/settings" element={<SettingsScreen />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

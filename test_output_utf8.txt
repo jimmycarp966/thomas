@@ -1,0 +1,100 @@
+﻿
+Running 6 tests using 4 workers
+
+[1A[2K[1/6] [chromium] ÔÇ║ tests\settings.spec.ts:10:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should load settings page correctly
+[1A[2K[2/6] [chromium] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload
+[1A[2K[3/6] [firefox] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload
+[1A[2K[4/6] [firefox] ÔÇ║ tests\settings.spec.ts:10:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should load settings page correctly
+[1A[2K[5/6] [webkit] ÔÇ║ tests\settings.spec.ts:10:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should load settings page correctly
+[1A[2K[6/6] [webkit] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload
+[1A[2K  1) [chromium] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveValue[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('select')
+    Expected: [32m"[7mcons[27mer[7mv[27mat[7miv[27me"[39m
+    Received: [31m"[7mmod[27merate"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveValue" with timeout 5000ms[22m
+    [2m  - waiting for locator('select')[22m
+    [2m    8 ├ù locator resolved to <select class="w-full bg-black/20 border border-border-dark rounded-lg px-3 py-2 text-white">ÔÇª</select>[22m
+    [2m      - unexpected value "moderate"[22m
+
+
+      38 |
+      39 |         // 4. Verificar valores (Este test fallar├í en la implementaci├│n actual)
+    > 40 |         await expect(riskSelect).toHaveValue('conservative')
+         |                                  ^
+      41 |         await expect(maxAmountInput).toHaveValue('5000')
+      42 |         await expect(stopLossInput).toHaveValue('7.5')
+      43 |         await expect(takeProfitInput).toHaveValue('12.5')
+        at D:\Daniel\Paginas\Clientes\Thomas\tests\settings.spec.ts:40:34
+
+    Error Context: test-results\settings-Thomas-Settings-F-02217-ttings-persist-after-reload-chromium\error-context.md
+
+
+[1A[2K  2) [firefox] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveValue[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('select')
+    Expected: [32m"[7mcons[27mer[7mv[27mat[7miv[27me"[39m
+    Received: [31m"[7mmod[27merate"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveValue" with timeout 5000ms[22m
+    [2m  - waiting for locator('select')[22m
+    [2m    9 ├ù locator resolved to <select class="w-full bg-black/20 border border-border-dark rounded-lg px-3 py-2 text-white">ÔÇª</select>[22m
+    [2m      - unexpected value "moderate"[22m
+
+
+      38 |
+      39 |         // 4. Verificar valores (Este test fallar├í en la implementaci├│n actual)
+    > 40 |         await expect(riskSelect).toHaveValue('conservative')
+         |                                  ^
+      41 |         await expect(maxAmountInput).toHaveValue('5000')
+      42 |         await expect(stopLossInput).toHaveValue('7.5')
+      43 |         await expect(takeProfitInput).toHaveValue('12.5')
+        at D:\Daniel\Paginas\Clientes\Thomas\tests\settings.spec.ts:40:34
+
+    Error Context: test-results\settings-Thomas-Settings-F-02217-ttings-persist-after-reload-firefox\error-context.md
+
+
+[1A[2K  3) [webkit] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveValue[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('select')
+    Expected: [32m"[7mcons[27mer[7mv[27mat[7miv[27me"[39m
+    Received: [31m"[7mmod[27merate"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveValue" with timeout 5000ms[22m
+    [2m  - waiting for locator('select')[22m
+    [2m    9 ├ù locator resolved to <select class="w-full bg-black/20 border border-border-dark rounded-lg px-3 py-2 text-white">ÔÇª</select>[22m
+    [2m      - unexpected value "moderate"[22m
+
+
+      38 |
+      39 |         // 4. Verificar valores (Este test fallar├í en la implementaci├│n actual)
+    > 40 |         await expect(riskSelect).toHaveValue('conservative')
+         |                                  ^
+      41 |         await expect(maxAmountInput).toHaveValue('5000')
+      42 |         await expect(stopLossInput).toHaveValue('7.5')
+      43 |         await expect(takeProfitInput).toHaveValue('12.5')
+        at D:\Daniel\Paginas\Clientes\Thomas\tests\settings.spec.ts:40:34
+
+    Error Context: test-results\settings-Thomas-Settings-F-02217-ttings-persist-after-reload-webkit\error-context.md
+
+
+[1A[2K  3 failed
+    [chromium] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload 
+    [firefox] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload 
+    [webkit] ÔÇ║ tests\settings.spec.ts:14:9 ÔÇ║ Thomas Settings Functionality ÔÇ║ should verify if settings persist after reload 
+  3 passed (26.0s)
+
+[36m  Serving HTML report at http://localhost:54975. Press Ctrl+C to quit.[39m

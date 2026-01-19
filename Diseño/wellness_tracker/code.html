@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wellness Tracker - Nexus AI</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007a7a",
+                        "background-light": "#f7f7f7",
+                        "background-dark": "#0d0d0d",
+                        "surface-dark": "#161616",
+                        "surface-darker": "#111111",
+                        "border-dark": "#2a2a2a",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Utilities for the timer ring */
+        .timer-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Hide scrollbar for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display h-screen overflow-hidden flex selection:bg-primary selection:text-white">
+<!-- Sidebar -->
+<aside class="hidden lg:flex w-72 flex-col border-r border-border-dark bg-surface-darker h-full">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 text-primary">
+<svg class="h-full w-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.8261 30.5736C16.7203 29.8826 20.2244 29.4783 24 29.4783C27.7756 29.4783 31.2797 29.8826 34.1739 30.5736C36.9144 31.2278 39.9967 32.7669 41.3563 33.8352L24.8486 7.36089C24.4571 6.73303 23.5429 6.73303 23.1514 7.36089L6.64374 33.8352C8.00331 32.7669 11.0856 31.2278 13.8261 30.5736Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M39.998 35.764C39.9944 35.7463 39.9875 35.7155 39.9748 35.6706C39.9436 35.5601 39.8949 35.4259 39.8346 35.2825C39.8168 35.2403 39.7989 35.1993 39.7813 35.1602C38.5103 34.2887 35.9788 33.0607 33.7095 32.5189C30.9875 31.8691 27.6413 31.4783 24 31.4783C20.3587 31.4783 17.0125 31.8691 14.2905 32.5189C12.0012 33.0654 9.44505 34.3104 8.18538 35.1832C8.17384 35.2075 8.16216 35.233 8.15052 35.2592C8.09919 35.3751 8.05721 35.4886 8.02977 35.589C8.00356 35.6848 8.00039 35.7333 8.00004 35.7388C8.00004 35.739 8 35.7393 8.00004 35.7388C8.00004 35.7641 8.0104 36.0767 8.68485 36.6314C9.34546 37.1746 10.4222 37.7531 11.9291 38.2772C14.9242 39.319 19.1919 40 24 40C28.8081 40 33.0758 39.319 36.0709 38.2772C37.5778 37.7531 38.6545 37.1746 39.3151 36.6314C39.9006 36.1499 39.9857 35.8511 39.998 35.764ZM4.95178 32.7688L21.4543 6.30267C22.6288 4.4191 25.3712 4.41909 26.5457 6.30267L43.0534 32.777C43.0709 32.8052 43.0878 32.8338 43.104 32.8629L41.3563 33.8352C43.104 32.8629 43.1038 32.8626 43.104 32.8629L43.1051 32.865L43.1065 32.8675L43.1101 32.8739L43.1199 32.8918C43.1276 32.906 43.1377 32.9246 43.1497 32.9473C43.1738 32.9925 43.2062 33.0545 43.244 33.1299C43.319 33.2792 43.4196 33.489 43.5217 33.7317C43.6901 34.1321 44 34.9311 44 35.7391C44 37.4427 43.003 38.7775 41.8558 39.7209C40.6947 40.6757 39.1354 41.4464 37.385 42.0552C33.8654 43.2794 29.133 44 24 44C18.867 44 14.1346 43.2794 10.615 42.0552C8.86463 41.4464 7.30529 40.6757 6.14419 39.7209C4.99695 38.7775 3.99999 37.4427 3.99999 35.7391C3.99999 34.8725 4.29264 34.0922 4.49321 33.6393C4.60375 33.3898 4.71348 33.1804 4.79687 33.0311C4.83898 32.9556 4.87547 32.8935 4.9035 32.8471C4.91754 32.8238 4.92954 32.8043 4.93916 32.7889L4.94662 32.777L4.95178 32.7688ZM35.9868 29.004L24 9.77997L12.0131 29.004C12.4661 28.8609 12.9179 28.7342 13.3617 28.6282C16.4281 27.8961 20.0901 27.4783 24 27.4783C27.9099 27.4783 31.5719 27.8961 34.6383 28.6282C35.082 28.7342 35.5339 28.8609 35.9868 29.004Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Nexus AI</h2>
+</div>
+<div class="px-4 pb-6 border-b border-border-dark">
+<div class="flex gap-3 items-center p-2 rounded-lg hover:bg-surface-dark transition-colors cursor-pointer">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border border-border-dark shrink-0" data-alt="User profile picture of Alex K showing a man in a modern office" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBXWGHgxYB9GX9GxiNN6reLiqjcCTdIz_V_etLJ2aW7vFYLt_j0kO0X6fytfHbRv22yVPpdJqkj3-wRk9C9vG1tQ055tBpqyPvIj8UJZZ1urE5LXV-meGjKmlJt_xxSMNs-MxP2S8wKE8vYYJfaNuEdD041hp8ZxkulbpmApNXiuW-J_hKZRKj7Ge0mSxfLU76xsjN2ajxsgQAKIhiA6x9Ooxj_IGpUYGz5iLO5jvAxVvoRYXn-oBC7BHlzleb05OUWh_ZC5jDQaxlJ");'></div>
+<div class="flex flex-col overflow-hidden">
+<h1 class="text-white text-sm font-medium leading-normal truncate">Alex K.</h1>
+<p class="text-primary text-xs font-normal leading-normal">Pro Plan</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1 p-4 grow">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-surface-dark transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium leading-normal">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-surface-dark transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">trending_up</span>
+<span class="text-sm font-medium leading-normal">Trading</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-dark text-white shadow-sm ring-1 ring-white/5" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary fill-1">monitor_heart</span>
+<span class="text-sm font-medium leading-normal">Wellness</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-surface-dark transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">book</span>
+<span class="text-sm font-medium leading-normal">Journal</span>
+</a>
+<div class="mt-auto pt-4 border-t border-border-dark">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-surface-dark transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors">memory</span>
+<span class="text-sm font-medium leading-normal">AI Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Top Header Mobile/Desktop -->
+<header class="flex items-center justify-between px-6 py-4 border-b border-border-dark bg-surface-darker/50 backdrop-blur-md z-10 sticky top-0">
+<div class="flex items-center gap-4 lg:hidden">
+<button class="text-white">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-bold text-lg text-white">Wellness</span>
+</div>
+<div class="hidden lg:flex flex-col">
+<h2 class="text-white text-xl font-bold">Biometric Intelligence</h2>
+<p class="text-gray-500 text-xs">Syncing real-time with Oura Ring &amp; Apple Health...</p>
+</div>
+<div class="flex gap-3">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-surface-dark text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-surface-dark text-gray-400 hover:text-white transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 size-2 bg-primary rounded-full border border-background-dark"></span>
+</button>
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-surface-dark text-gray-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 no-scrollbar">
+<div class="max-w-4xl mx-auto space-y-6">
+<!-- Page Heading & Context -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-2">
+<div class="space-y-2">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dark border border-border-dark">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-xs font-medium text-primary tracking-wide uppercase">Live Monitoring</span>
+</div>
+<h1 class="text-4xl lg:text-5xl font-black tracking-tight text-white">Wellness Tracker</h1>
+<p class="text-gray-400 max-w-lg">Monitor biological metrics alongside market performance to optimize decision fatigue.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 text-sm font-medium text-gray-300 bg-surface-dark hover:bg-[#222] rounded-lg border border-border-dark transition-colors">Export CSV</button>
+<button class="px-4 py-2 text-sm font-medium text-background-dark bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-[0_0_15px_-3px_rgba(0,122,122,0.4)]">Sync Devices</button>
+</div>
+</div>
+<!-- Tabs & Main Module -->
+<div class="bg-surface-darker rounded-2xl border border-border-dark overflow-hidden shadow-2xl relative">
+<!-- Subtle ambient glow behind the card -->
+<div class="absolute -top-40 -right-40 size-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+<!-- Tabs Header -->
+<div class="flex border-b border-border-dark px-6 pt-4 gap-8">
+<button class="flex flex-col items-center pb-4 border-b-2 border-primary group cursor-pointer outline-none focus:outline-none">
+<span class="text-primary font-bold text-sm tracking-wide">Fasting</span>
+</button>
+<button class="flex flex-col items-center pb-4 border-b-2 border-transparent hover:border-gray-700 group cursor-pointer transition-all outline-none focus:outline-none">
+<span class="text-gray-500 group-hover:text-gray-300 font-bold text-sm tracking-wide transition-colors">Weight</span>
+</button>
+<button class="flex flex-col items-center pb-4 border-b-2 border-transparent hover:border-gray-700 group cursor-pointer transition-all outline-none focus:outline-none">
+<span class="text-gray-500 group-hover:text-gray-300 font-bold text-sm tracking-wide transition-colors">Stats</span>
+</button>
+</div>
+<!-- Module Content (Fasting Tab) -->
+<div class="p-8 lg:p-12 flex flex-col items-center relative z-0">
+<!-- Circular Timer Section -->
+<div class="relative size-72 lg:size-80 flex items-center justify-center mb-10">
+<!-- Background Circle -->
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-dark" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" stroke-width="4"></circle>
+<!-- Progress Circle -->
+<!-- Circumference approx 2 * pi * 48% ~= 300% relative units. If size is 320px, r~=150. C~=942. -->
+<circle class="text-primary timer-circle drop-shadow-[0_0_10px_rgba(0,122,122,0.5)]" cx="50%" cy="50%" fill="transparent" r="48%" stroke="currentColor" stroke-dasharray="942" stroke-dashoffset="235" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<!-- Central Content -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-gray-500 text-sm font-medium tracking-widest uppercase mb-2">Elapsed Time</span>
+<div class="font-display font-black text-6xl text-white tracking-tighter tabular-nums mb-1 drop-shadow-2xl">
+                                    14:32:05
+                                </div>
+<div class="flex items-center gap-2 text-primary/80 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+<span class="text-xs font-bold">Autophagy Zone</span>
+</div>
+</div>
+</div>
+<!-- Controls -->
+<div class="flex flex-col items-center gap-4 mb-12 w-full max-w-xs">
+<button class="w-full py-4 rounded-xl bg-surface-dark border border-border-dark text-white font-bold hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400 transition-all group flex items-center justify-center gap-2">
+<span class="material-symbols-outlined group-hover:animate-pulse">stop_circle</span>
+                                End Fast &amp; Log
+                            </button>
+<p class="text-xs text-gray-500">Target: 16 Hours (TRF) • Ends at 18:00</p>
+</div>
+<!-- Stats Grid (Bento Box) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+<!-- Metric 1 -->
+<div class="bg-[#131313] p-5 rounded-xl border border-border-dark flex items-center gap-4 hover:border-primary/30 transition-colors group">
+<div class="size-12 rounded-full bg-surface-dark flex items-center justify-center border border-border-dark group-hover:border-primary/50 group-hover:text-primary transition-colors text-gray-400">
+<span class="material-symbols-outlined">local_fire_department</span>
+</div>
+<div>
+<p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Streak</p>
+<p class="text-white text-xl font-bold">5 Days</p>
+</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-[#131313] p-5 rounded-xl border border-border-dark flex items-center gap-4 hover:border-primary/30 transition-colors group">
+<div class="size-12 rounded-full bg-surface-dark flex items-center justify-center border border-border-dark group-hover:border-primary/50 group-hover:text-primary transition-colors text-gray-400">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Avg Duration</p>
+<p class="text-white text-xl font-bold">16.2h</p>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-[#131313] p-5 rounded-xl border border-border-dark flex items-center gap-4 hover:border-primary/30 transition-colors group">
+<div class="size-12 rounded-full bg-surface-dark flex items-center justify-center border border-border-dark group-hover:border-primary/50 group-hover:text-primary transition-colors text-gray-400">
+<span class="material-symbols-outlined">numbers</span>
+</div>
+<div>
+<p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Total Fasts</p>
+<p class="text-white text-xl font-bold">23</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Insight Card -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+<!-- Left: Insight Text -->
+<div class="lg:col-span-3 bg-gradient-to-r from-surface-darker to-[#0F1515] p-6 rounded-2xl border border-border-dark flex gap-4 items-start relative overflow-hidden">
+<!-- Decorative element -->
+<div class="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/5 to-transparent"></div>
+<div class="size-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-1">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="z-10">
+<h3 class="text-white font-bold text-lg mb-1">Correlation Insight</h3>
+<p class="text-gray-400 text-sm leading-relaxed">
+                                Your cognitive energy levels consistently peak during the <span class="text-white font-semibold">14th hour</span> of your fast. 
+                                Based on your trading history, you have a <span class="text-primary font-bold">+12%</span> higher win rate on trades executed during this window.
+                            </p>
+<div class="mt-4 flex gap-3">
+<button class="text-xs font-bold text-primary hover:text-white transition-colors flex items-center gap-1">
+                                    VIEW CORRELATION CHART <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right: Quick Action / Mini Chart Placeholder -->
+<div class="lg:col-span-1 bg-surface-darker p-6 rounded-2xl border border-border-dark flex flex-col justify-between">
+<div class="flex justify-between items-center mb-4">
+<span class="text-xs text-gray-500 uppercase font-bold">Weight Trend</span>
+<span class="text-emerald-400 text-xs font-bold flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_drop_down</span> -0.4kg</span>
+</div>
+<!-- Abstract CSS Chart -->
+<div class="h-12 w-full flex items-end justify-between gap-1">
+<div class="w-full bg-primary/20 h-[30%] rounded-sm"></div>
+<div class="w-full bg-primary/30 h-[45%] rounded-sm"></div>
+<div class="w-full bg-primary/20 h-[40%] rounded-sm"></div>
+<div class="w-full bg-primary/40 h-[60%] rounded-sm"></div>
+<div class="w-full bg-primary/30 h-[55%] rounded-sm"></div>
+<div class="w-full bg-primary/60 h-[75%] rounded-sm"></div>
+<div class="w-full bg-primary h-[65%] rounded-sm shadow-[0_0_10px_rgba(0,122,122,0.5)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
