@@ -138,6 +138,7 @@ export async function saveWellnessData(formData: FormData) {
     await supabase
       .from('wellness_tracking')
       .insert({
+        user_id: '00000000-0000-0000-0000-000000000001',
         fasting_hours: fastingHours,
         mood,
         energy,

@@ -328,7 +328,7 @@ export class IOLClient {
 
   async getAccountState() {
     try {
-      return await this.request('/EstadodeCuenta')
+      return await this.request('/EstadoCuenta')
     } catch (error) {
       console.error('Error fetching account state:', error)
       throw error

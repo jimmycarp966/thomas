@@ -27,43 +27,11 @@ export async function searchSimilarDecisions(
   const supabase = await createClient()
 
   try {
-    const query = `
-      SELECT 
-        id,
-        asset_symbol,
-        decision_type,
-        confidence,
-        ai_analysis->>'reasoning' as reasoning,
-        1 - (embedding <=> (
-          SELECT embedding 
-          FROM trading_decisions 
-          WHERE asset_symbol = $1 
-            AND asset_type = $2 
-            AND user_id = $3 
-            AND embedding IS NOT NULL
-          LIMIT 1
-        )) as similarity
-      FROM trading_decisions
-      WHERE user_id = $3
-        AND asset_type = $2
-        AND embedding IS NOT NULL
-        AND id NOT IN (
-          SELECT id 
-          FROM trading_decisions 
-          WHERE asset_symbol = $1 
-            AND asset_type = $2 
-            AND user_id = $3
-          LIMIT 1
-        )
-      ORDER BY similarity DESC
-      LIMIT $4
-    `
-
     const { data, error } = await supabase.rpc('match_similar_decisions', {
-      query_asset_symbol: assetSymbol,
-      query_asset_type: assetType,
-      query_user_id: userId,
-      match_limit: limit,
+      p_asset_symbol: assetSymbol,
+      p_asset_type: assetType,
+      p_user_id: userId,
+      p_match_limit: limit,
     })
 
     if (error) {
@@ -89,9 +57,9 @@ export async function searchRelevantLearnings(
     const embedding = await generateEmbedding(context)
 
     const { data, error } = await supabase.rpc('match_relevant_learnings', {
-      query_embedding: embedding,
-      query_user_id: userId,
-      match_limit: limit,
+      p_embedding: embedding,
+      p_user_id: userId,
+      p_match_limit: limit,
     })
 
     if (error) {

@@ -3,7 +3,7 @@ const IOL_PASSWORD = 'Pastelito673!!!'
 
 async function testIOLEndpoints() {
   console.log('🔐 Autenticando con IOL...')
-  
+
   // Primero autenticar
   const authResponse = await fetch('https://api.invertironline.com/token', {
     method: 'POST',
@@ -41,7 +41,7 @@ async function testIOLEndpoints() {
   for (const endpoint of endpoints) {
     const url = `${baseUrl}${endpoint}`
     console.log(`\n📡 Probando: ${endpoint}`)
-    
+
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -52,7 +52,7 @@ async function testIOLEndpoints() {
       })
 
       console.log(`   Status: ${response.status} ${response.statusText}`)
-      
+
       if (response.ok) {
         const data = await response.json()
         console.log('   ✅ ÉXITO! Respuesta:', JSON.stringify(data).substring(0, 200) + '...')
@@ -63,6 +63,43 @@ async function testIOLEndpoints() {
     } catch (error: any) {
       console.log('   ❌ Exception:', error.message)
     }
+  }
+  // Probando Portafolio
+  console.log('\n📡 Probando: /Portafolio');
+  try {
+    const response = await fetch(`${baseUrl}/Portafolio`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(`   Status: ${response.status} ${response.statusText}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('   ✅ ÉXITO! Respuesta:', JSON.stringify(data).substring(0, 200) + '...');
+    }
+  } catch (error: any) {
+    console.error('   ❌ Error:', error.message);
+  }
+
+  // Probando Estado de Cuenta
+  console.log('\n📡 Probando: /EstadodeCuenta');
+  try {
+    const response = await fetch(`${baseUrl}/EstadodeCuenta`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log(`   Status: ${response.status} ${response.statusText}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('   ✅ ÉXITO! Respuesta:', JSON.stringify(data).substring(0, 200) + '...');
+    }
+  } catch (error: any) {
+    console.error('   ❌ Error:', error.message);
   }
 }
 

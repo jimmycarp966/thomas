@@ -158,6 +158,7 @@ export async function sendChatMessage(conversationId: string | null, message: st
 
     await supabase.from('chat_messages').insert({
       conversation_id: conversationIdToUse,
+      user_id: '00000000-0000-0000-0000-000000000001',
       role: 'user',
       content: message,
     })
@@ -228,6 +229,7 @@ export async function sendChatMessage(conversationId: string | null, message: st
 
     await supabase.from('chat_messages').insert({
       conversation_id: conversationIdToUse,
+      user_id: '00000000-0000-0000-0000-000000000001',
       role: 'assistant',
       content: response,
       ai_metadata: { embedding },
@@ -254,9 +256,10 @@ async function retrieveRelevantContext(query: string): Promise<string> {
     // Buscar mensajes relevantes usando búsqueda vectorial
     const { data: relevantMessages } = await supabase
       .rpc('match_chat_messages', {
-        query_embedding: queryEmbedding,
-        match_threshold: 0.7,
-        match_count: 5
+        p_embedding: queryEmbedding,
+        p_user_id: '00000000-0000-0000-0000-000000000001',
+        p_match_threshold: 0.7,
+        p_match_count: 5
       })
 
     if (!relevantMessages || relevantMessages.length === 0) {

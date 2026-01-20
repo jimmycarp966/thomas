@@ -43,28 +43,23 @@ export default function ChatPage() {
 
     try {
       const result = await sendChatMessage(conversationId, input)
-      
+
       if (result.success) {
-        setConversationId(result.conversationId)
-        
         const assistantMessage: Message = {
           role: 'assistant',
           content: result.response,
-          timestamp: new Date(),
+          timestamp: new Date()
         }
-        
         setMessages(prev => [...prev, assistantMessage])
+        if (!conversationId) {
+          setConversationId(result.conversationId)
+        }
+      } else {
+        alert('Error: ' + (result.error || 'No se pudo obtener respuesta de la IA'))
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      
-      const errorMessage: Message = {
-        role: 'assistant',
-        content: 'Lo siento, encontré un error. Por favor intenta nuevamente.',
-        timestamp: new Date(),
-      }
-      
-      setMessages(prev => [...prev, errorMessage])
+      alert('Error crítico al enviar mensaje')
     } finally {
       setLoading(false)
     }
@@ -104,11 +99,10 @@ export default function ChatPage() {
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-primary text-white'
-                    : 'bg-surface-light text-gray-200 border border-border-dark'
-                }`}
+                className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
+                  ? 'bg-primary text-white'
+                  : 'bg-surface-light text-gray-200 border border-border-dark'
+                  }`}
               >
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                 <p className="text-[10px] mt-1 opacity-60">
