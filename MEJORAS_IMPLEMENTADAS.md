@@ -4,6 +4,15 @@
 
 Se han implementado las siguientes mejoras avanzadas para el sistema de trading con IA:
 
+### Corrección de Conectividad IOL y Perfil Agresivo ✅
+
+**Fecha:** 19 de Enero, 2026
+
+**Mejoras:**
+- **IOL:** Corregido endpoint de cotizaciones (`/bCBA/Titulos/{ticker}/Cotizacion`).
+- **Configuración:** Activado perfil **Agresivo** (Stop Loss 15%, Take Profit 25%, Auto-ejecución habilitada).
+- **Git:** Inicializado repositorio y vinculado a GitHub.
+
 ### 1. RAG (Retrieval-Augmented Generation) ✅
 
 **Archivos:**
