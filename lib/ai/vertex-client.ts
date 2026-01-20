@@ -6,42 +6,47 @@ const getAIConfig = () => {
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('Thomas AI: [v2.4] Iniciando configuración robusta de Vertex AI...');
+  console.log('Thomas AI: [v2.5] Iniciando RECONSTRUCCIÓN PEM DEFINITIVA...');
 
   if (serviceAccountJson) {
     try {
       let rawJson = serviceAccountJson.trim();
-
-      // Limpieza de comillas externas del JSON completo
       if ((rawJson.startsWith('"') && rawJson.endsWith('"')) || (rawJson.startsWith("'") && rawJson.endsWith("'"))) {
         rawJson = rawJson.substring(1, rawJson.length - 1);
       }
 
       const credentials = JSON.parse(rawJson);
-
-      // Extraer y normalizar llave privada
       let pk = credentials.private_key || credentials.privateKey;
 
       if (typeof pk === 'string') {
-        // 1. Limpieza de escapes: transformar "\\n" literal en "\n" real
-        pk = pk.replace(/\\n/g, '\n');
+        console.log(`Thomas AI: [v2.5] Detectada llave (longitud original: ${pk.length})`);
 
-        // 2. Limpieza de caracteres invisibles/control (excepto saltos de línea y retorno)
-        // Esto elimina posibles caracteres de control que rompen el decoder de OpenSSL
-        pk = pk.replace(/[^\x20-\x7E\n\r]/g, '');
+        // 1. Extraer solo el contenido Base64 puro
+        // Eliminamos cabeceras, pies, saltos de línea (reales o escapados) y basura
+        const b64 = pk
+          .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+          .replace(/-----END PRIVATE KEY-----/g, '')
+          .replace(/\\n/g, '')
+          .replace(/\n/g, '')
+          .replace(/\r/g, '')
+          .replace(/\s/g, '')
+          .trim();
 
-        // 3. Asegurar que empiece y termine limpiamente
-        pk = pk.trim();
+        // 2. Reconstruir el PEM perfectamente según estándar PKCS#8
+        // 64 caracteres por línea según el RFC 7468
+        const lines = b64.match(/.{1,64}/g) || [];
+        const perfectPem = [
+          '-----BEGIN PRIVATE KEY-----',
+          ...lines,
+          '-----END PRIVATE KEY-----',
+          '' // Salto de línea final
+        ].join('\n');
 
-        credentials.private_key = pk;
-        credentials.privateKey = pk;
+        credentials.private_key = perfectPem;
+        credentials.privateKey = perfectPem;
 
-        console.log(`Thomas AI: [v2.4] Llave procesada (Longitud: ${pk.length})`);
-        console.log(`Thomas AI: [v2.4] Header: "${pk.substring(0, 25)}..."`);
-
-        if (!pk.includes('-----BEGIN PRIVATE KEY-----')) {
-          console.error('Thomas AI: [v2.4] ERROR: La llave no tiene el formato PEM esperado (falta BEGIN).');
-        }
+        console.log(`Thomas AI: [v2.5] PEM reconstruido (Base64 puro: ${b64.length} chars)`);
+        console.log(`Thomas AI: [v2.5] Header reconstruido: "${perfectPem.substring(0, 30)}..."`);
       }
 
       const pid = credentials.project_id || project;
@@ -55,7 +60,7 @@ const getAIConfig = () => {
         },
       });
     } catch (e: any) {
-      console.error('Thomas AI: [v2.4] ERROR de inicialización:', e.message);
+      console.error('Thomas AI: [v2.5] ERROR CRÍTICO:', e.message);
     }
   }
   else {
