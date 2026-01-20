@@ -8,7 +8,7 @@ import { getPortfolioValue } from '@/actions/trading'
 import { getLiveQuotes } from '@/actions/quotes'
 import { performTrade } from './trading'
 import { revalidatePath } from 'next/cache'
-import { parseTradingIntent, shouldExecuteTrade, TradingIntent } from '@/lib/ai/trading-intent-parser'
+import { parseTradingIntent, shouldExecuteTrade, TradingIntent, parseMultipleTradingIntents } from '@/lib/ai/trading-intent-parser'
 import { getCircuitBreakerStatus } from '@/lib/trading/circuit-breaker'
 import { checkTradePermission, getTrustLevel } from '@/lib/trading/trust-ladder'
 import { sendTradeNotification, sendAlertNotification } from '@/lib/telegram/bot'
@@ -259,101 +259,44 @@ export async function sendChatMessage(conversationId: string | null, message: st
     await extractAndSaveLearning(message, response, conversationIdToUse)
 
     // Detectar y ejecutar comandos de trading
-    const tradingIntent = parseTradingIntent(message)
-    if (shouldExecuteTrade(tradingIntent)) {
-      console.log('[Thomas Chat] Detected trading intent:', tradingIntent)
+    const multipleIntents = parseMultipleTradingIntents(message)
+    console.log('[Thomas Chat] Detected trading intents:', multipleIntents)
 
-      try {
-        // Verificar Circuit Breaker
-        const circuitBreakerStatus = await getCircuitBreakerStatus()
-        if (circuitBreakerStatus.isTradingPaused) {
-          console.log('[Thomas Chat] ❌ Circuit Breaker activado, no se ejecuta trade')
-          await sendAlertNotification(
-            '🛑 Circuit Breaker Activado',
-            `No se pudo ejecutar el trade: ${circuitBreakerStatus.pauseReason}`
-          )
-        } else {
-          // Verificar Trust Ladder
-          const trustLevel = await getTrustLevel()
-          const tradeAmount = tradingIntent.quantity || 1000
-
-          const permission = await checkTradePermission('00000000-0000-0000-0000-000000000001', tradeAmount)
-
-          if (!permission.allowed) {
-            console.log('[Thomas Chat] ❌ Trust Ladder no permite ejecutar trade:', permission.reason)
-            await sendAlertNotification(
-              '🔒 Trust Ladder',
-              `No se pudo ejecutar el trade: ${permission.reason}. Nivel actual: ${trustLevel.level}`
-            )
-          } else {
-            // Crear decisión de trading
-            const { data: decision } = await supabase
-              .from('trading_decisions')
-              .insert({
-                user_id: '00000000-0000-0000-0000-000000000001',
-                asset_symbol: tradingIntent.symbol!,
-                asset_type: 'stock',
-                decision_type: tradingIntent.action === 'buy' ? 'BUY' : 'SELL',
-                ai_analysis: {
-                  reasoning: tradingIntent.reasoning,
-                  confidence: tradingIntent.confidence,
-                  source: 'chat_command'
-                },
-                suggested_amount: tradingIntent.quantity || 1000,
-                suggested_price: tradingIntent.price || 0,
-                stop_loss_price: tradingIntent.price ? tradingIntent.price * 0.95 : 0,
-                take_profit_price: tradingIntent.price ? tradingIntent.price * 1.1 : 0,
-                status: 'approved',
-                decided_at: new Date().toISOString()
-              })
-              .select()
-              .single()
-
-            if (decision) {
-              console.log('[Thomas Chat] Ejecutando trade desde chat...', decision)
-
-              // Ejecutar trade
-              const tradeResult = await performTrade(decision.id, 'iol')
-
-              if (tradeResult.success) {
-                console.log('[Thomas Chat] ✅ Trade ejecutado exitosamente:', tradeResult.trade)
-
-                // Notificar por Telegram
-                await sendTradeNotification(
-                  tradingIntent.symbol!,
-                  tradingIntent.action === 'buy' ? 'BUY' : 'SELL',
-                  tradeResult.trade.price,
-                  tradeResult.trade.quantity,
-                  tradingIntent.confidence
-                )
-
-                // Actualizar respuesta para incluir confirmación
-                const tradeConfirmation = `\n\n✅ **Trade Ejecutado Exitosamente**\n- ${tradingIntent.action.toUpperCase()} ${tradingIntent.symbol}\n- Cantidad: ${tradeResult.trade.quantity}\n- Precio: $${tradeResult.trade.price.toFixed(2)}\n- Total: $${tradeResult.trade.total_amount.toFixed(2)}\n\n${response}`
-
-                // Actualizar el mensaje de Thomas
-                await supabase
-                  .from('chat_messages')
-                  .update({ content: response + tradeConfirmation })
-                  .eq('id', (await supabase.from('chat_messages').select('id').eq('conversation_id', conversationIdToUse).eq('role', 'assistant').order('created_at', { ascending: false }).limit(1).single()).data?.id)
-
-                revalidatePath('/dashboard')
-                revalidatePath('/trading')
-              } else {
-                console.log('[Thomas Chat] ❌ Error ejecutando trade:', tradeResult.error)
-                await sendAlertNotification(
-                  '❌ Error Ejecutando Trade',
-                  `No se pudo ejecutar el trade: ${tradeResult.error}`
-                )
-              }
-            }
+    if (multipleIntents.hasMultipleTrades) {
+      // Ejecutar múltiples trades
+      console.log('[Thomas Chat] Executing multiple trades:', multipleIntents.intents.length)
+      
+      const tradeResults: any[] = []
+      
+      for (const intent of multipleIntents.intents) {
+        if (shouldExecuteTrade(intent)) {
+          const result = await executeSingleTrade(intent, supabase, conversationIdToUse || '', response)
+          if (result) {
+            tradeResults.push(result)
           }
         }
-      } catch (error) {
-        console.error('[Thomas Chat] Error ejecutando trade desde chat:', error)
-        await sendAlertNotification(
-          '❌ Error en Ejecución de Trade',
-          `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`
-        )
+      }
+      
+      // Si se ejecutaron trades, actualizar la respuesta
+      if (tradeResults.length > 0) {
+        const tradeConfirmation = tradeResults.map(r => 
+          `\n\n✅ **Trade Ejecutado Exitosamente**\n- ${r.action.toUpperCase()} ${r.symbol}\n- Cantidad: ${r.quantity}\n- Precio: $${r.price.toFixed(2)}\n- Total: $${r.total.toFixed(2)}`
+        ).join('\n')
+        
+        // Actualizar el mensaje de Thomas
+        await supabase
+          .from('chat_messages')
+          .update({ content: response + tradeConfirmation })
+          .eq('id', (await supabase.from('chat_messages').select('id').eq('conversation_id', conversationIdToUse).eq('role', 'assistant').order('created_at', { ascending: false }).limit(1).single()).data?.id)
+        
+        revalidatePath('/dashboard')
+        revalidatePath('/trading')
+      }
+    } else {
+      // Ejecutar un solo trade
+      const intent = multipleIntents.intents[0]
+      if (shouldExecuteTrade(intent)) {
+        await executeSingleTrade(intent, supabase, conversationIdToUse || '', response)
       }
     }
 
@@ -362,6 +305,111 @@ export async function sendChatMessage(conversationId: string | null, message: st
   } catch (error: any) {
     console.error('Error sending chat message:', error)
     return { error: error.message || 'failed to send message' }
+  }
+}
+
+async function executeSingleTrade(
+  intent: TradingIntent,
+  supabase: any,
+  conversationId: string,
+  response: string
+): Promise<any> {
+  console.log('[Thomas Chat] Executing single trade:', intent)
+
+  try {
+    // Verificar Circuit Breaker
+    const circuitBreakerStatus = await getCircuitBreakerStatus()
+    if (circuitBreakerStatus.isTradingPaused) {
+      console.log('[Thomas Chat] ❌ Circuit Breaker activado, no se ejecuta trade')
+      await sendAlertNotification(
+        '🛑 Circuit Breaker Activado',
+        `No se pudo ejecutar el trade: ${circuitBreakerStatus.pauseReason}`
+      )
+      return null
+    }
+
+    // Verificar Trust Ladder
+    const trustLevel = await getTrustLevel()
+    const tradeAmount = intent.quantity || 1000
+
+    const permission = await checkTradePermission('00000000-0000-0000-0000-000000000001', tradeAmount)
+
+    if (!permission.allowed) {
+      console.log('[Thomas Chat] ❌ Trust Ladder no permite ejecutar trade:', permission.reason)
+      await sendAlertNotification(
+        '🔒 Trust Ladder',
+        `No se pudo ejecutar el trade: ${permission.reason}. Nivel actual: ${trustLevel.level}`
+      )
+      return null
+    }
+
+    // Crear decisión de trading
+    const { data: decision } = await supabase
+      .from('trading_decisions')
+      .insert({
+        user_id: '00000000-0000-0000-0000-000000000001',
+        asset_symbol: intent.symbol!,
+        asset_type: 'stock',
+        decision_type: intent.action === 'buy' ? 'BUY' : 'SELL',
+        ai_analysis: {
+          reasoning: intent.reasoning,
+          confidence: intent.confidence,
+          source: 'chat_command'
+        },
+        suggested_amount: intent.quantity || 1000,
+        suggested_price: intent.price || 0,
+        stop_loss_price: intent.price ? intent.price * 0.95 : 0,
+        take_profit_price: intent.price ? intent.price * 1.1 : 0,
+        status: 'approved',
+        decided_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (!decision) {
+      console.log('[Thomas Chat] ❌ Error creando decisión de trading')
+      return null
+    }
+
+    console.log('[Thomas Chat] Ejecutando trade desde chat...', decision)
+
+    // Ejecutar trade
+    const tradeResult = await performTrade(decision.id, 'iol')
+
+    if (tradeResult.success) {
+      console.log('[Thomas Chat] ✅ Trade ejecutado exitosamente:', tradeResult.trade)
+
+      // Notificar por Telegram
+      await sendTradeNotification(
+        intent.symbol!,
+        intent.action === 'buy' ? 'BUY' : 'SELL',
+        tradeResult.trade.price,
+        tradeResult.trade.quantity,
+        intent.confidence
+      )
+
+      return {
+        action: intent.action,
+        symbol: intent.symbol,
+        quantity: tradeResult.trade.quantity,
+        price: tradeResult.trade.price,
+        total: tradeResult.trade.total_amount
+      }
+    } else {
+      console.log('[Thomas Chat] ❌ Error ejecutando trade:', tradeResult.error)
+      await sendAlertNotification(
+        '❌ Error Ejecutando Trade',
+        `No se pudo ejecutar el trade: ${tradeResult.error}`
+      )
+      return null
+    }
+  } catch (error) {
+    console.error('[Thomas Chat] Error ejecutando trade desde chat:', error)
+    await sendAlertNotification(
+      '❌ Error en Ejecución de Trade',
+      `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`
+    )
+    return null
   }
 }
 

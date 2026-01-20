@@ -7,6 +7,11 @@ export interface TradingIntent {
   reasoning: string
 }
 
+export interface MultipleTradingIntents {
+  intents: TradingIntent[]
+  hasMultipleTrades: boolean
+}
+
 export function parseTradingIntent(message: string): TradingIntent {
   const lowerMessage = message.toLowerCase()
 
@@ -109,6 +114,60 @@ export function parseTradingIntent(message: string): TradingIntent {
     price,
     confidence: Math.min(confidence, 100),
     reasoning
+  }
+}
+
+export function parseMultipleTradingIntents(message: string): MultipleTradingIntents {
+  const intents: TradingIntent[] = []
+  const lowerMessage = message.toLowerCase()
+
+  // Detectar acción global
+  let globalAction: 'buy' | 'sell' | 'hold' | 'unknown' = 'unknown'
+  if (lowerMessage.includes('compra') || lowerMessage.includes('comprar') || lowerMessage.includes('buy')) {
+    globalAction = 'buy'
+  } else if (lowerMessage.includes('vende') || lowerMessage.includes('vender') || lowerMessage.includes('sell')) {
+    globalAction = 'sell'
+  }
+
+  // Detectar confirmación global
+  let globalConfidence = 0
+  if (lowerMessage.includes('confirma') || lowerMessage.includes('confirmo') || 
+      lowerMessage.includes('procede') || lowerMessage.includes('proceder') ||
+      lowerMessage.includes('ejecuta') || lowerMessage.includes('ejecutar') ||
+      lowerMessage.includes('completa') || lowerMessage.includes('completar') ||
+      lowerMessage.includes('si') || lowerMessage.includes('estoy seguro')) {
+    globalConfidence += 20
+  }
+
+  // Detectar múltiples trades con el formato: "cantidad en simbolo"
+  const tradePattern = /(\d+)\s*(en|en\s+la\s+compra\s+de)\s*([a-z]{2,6})/gi
+  const matches = [...message.matchAll(tradePattern)]
+
+  if (matches.length > 0) {
+    // Se detectaron múltiples trades
+    matches.forEach((match) => {
+      const quantity = parseFloat(match[1])
+      const symbol = match[3].toUpperCase()
+      const confidence = globalConfidence + 30 + 20 + 10 // acción + confirmación + símbolo + cantidad
+
+      intents.push({
+        action: globalAction,
+        symbol,
+        quantity,
+        price: null,
+        confidence: Math.min(confidence, 100),
+        reasoning: `Intención detectada: ${globalAction.toUpperCase()} ${symbol} cantidad: ${quantity}`
+      })
+    })
+  } else {
+    // No se detectaron múltiples trades, usar el parser simple
+    const intent = parseTradingIntent(message)
+    intents.push(intent)
+  }
+
+  return {
+    intents,
+    hasMultipleTrades: intents.length > 1
   }
 }
 
