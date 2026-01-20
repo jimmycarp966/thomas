@@ -45,23 +45,25 @@ export function parseTradingIntent(message: string): TradingIntent {
 
   // Detectar símbolo (YPF, GGAL, YPFD, etc.)
   const symbolPatterns = [
-    /ypf(d)?/i,
-    /ggal/i,
-    /pamp/i,
-    /bma/i,
-    /bbar/i,
-    /supv/i,
-    /txar/i,
-    /alua/i,
-    /teco2?/i,
-    /merval/i
+    /\b(YPFD|YPF)\b/i,
+    /\b(GGAL)\b/i,
+    /\b(PAMP)\b/i,
+    /\b(BMA)\b/i,
+    /\b(BBAR)\b/i,
+    /\b(SUPV)\b/i,
+    /\b(TXAR)\b/i,
+    /\b(ALUA)\b/i,
+    /\b(TECO2?)\b/i,
+    /\b(MERVAL)\b/i,
+    /\b(BTC|ETH|SOL|BNB|XRP)\b/i
   ]
 
   for (const pattern of symbolPatterns) {
     const match = message.match(pattern)
     if (match) {
-      symbol = match[0].toUpperCase()
-      confidence += 20
+      // Normalizar YPF a YPFD
+      symbol = match[0].toUpperCase().replace('YPF', 'YPFD')
+      confidence += 25
       break
     }
   }
@@ -98,8 +100,12 @@ export function parseTradingIntent(message: string): TradingIntent {
   }
 
   // Generar reasoning
-  if (action === 'unknown') {
+  if (action === 'unknown' && !symbol) {
     reasoning = 'No se detectó una intención de trading clara'
+    confidence = 0
+  } else if (action === 'unknown' && symbol) {
+    reasoning = `Símbolo detectado pero sin acción clara (contexto: ${symbol})`
+    confidence = Math.max(confidence - 20, 10)
   } else {
     reasoning = `Intención detectada: ${action.toUpperCase()}`
     if (symbol) reasoning += ` ${symbol}`

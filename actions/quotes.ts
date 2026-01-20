@@ -92,7 +92,7 @@ export async function getLiveQuotes(): Promise<{ quotes: QuoteData[], error?: st
                 // Agregar algunos activos populares si no hay portafolio
                 if (quotes.filter(q => q.exchange === 'iol').length === 0) {
                     console.log('[Quotes] No portfolio assets, fetching popular tickers...')
-                    const popularTickers = ['GGAL', 'YPF', 'YPFD', 'PAMP', 'BMA', 'BBAR']
+                    const popularTickers = ['GGAL', 'YPFD', 'PAMP', 'BMA', 'BBAR']
                     for (const ticker of popularTickers) {
                         try {
                             const quote = await iol.getQuote(ticker)

@@ -316,6 +316,28 @@ export async function sendChatMessage(conversationId: string | null, message: st
       console.log('[Thomas Chat] Symbol already detected or multiple trades detected')
     }
 
+    // Si la acción es 'unknown' pero hay un símbolo en el contexto y el usuario confirmó,
+    // inferir que la acción es 'buy'
+    const intent = multipleIntents.intents[0]
+    if (intent.action === 'unknown' && intent.symbol !== null) {
+      const lowerMessage = message.toLowerCase()
+      const confirmationWords = ['si', 'compra', 'confirma', 'confirmo', 'procede', 'proceder', 'ejecuta', 'ejecutar', 'completa', 'completar', 'adelante', 'ok', 'okay', 'perfecto', 'bien']
+      
+      const hasConfirmation = confirmationWords.some(word => lowerMessage.includes(word))
+      console.log('[Thomas Chat] Checking for confirmation words:', confirmationWords)
+      console.log('[Thomas Chat] User message:', lowerMessage)
+      console.log('[Thomas Chat] Has confirmation:', hasConfirmation)
+      
+      if (hasConfirmation) {
+        // El usuario está confirmando una compra
+        intent.action = 'buy'
+        intent.confidence += 30 // Aumentar confianza por confirmación
+        intent.reasoning = `Intención detectada: COMPRA ${intent.symbol} (confirmación del usuario)`
+        console.log('[Thomas Chat] ✅ Action inferred as BUY from confirmation')
+        console.log('[Thomas Chat] Updated intent:', JSON.stringify(intent, null, 2))
+      }
+    }
+
     console.log('[Thomas Chat] Final intents after context analysis:', JSON.stringify(multipleIntents, null, 2))
     console.log('[Thomas Chat] ========== END TRADING INTENT DETECTION ==========')
 

@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         const currentSymbols = openPositions?.map(p => p.symbol) || []
 
         // 4. Escanear acciones populares que no tenemos
-        const watchlist = ['GGAL', 'YPF', 'YPFD', 'PAMP', 'BMA', 'BBAR', 'SUPV', 'TXAR', 'ALUA', 'TECO2']
+        const watchlist = ['GGAL', 'YPFD', 'PAMP', 'BMA', 'BBAR', 'SUPV', 'TXAR', 'ALUA', 'TECO2']
         const toAnalyze = watchlist.filter(s => !currentSymbols.includes(s))
 
         console.log(`[ScanOpportunities] Analizando ${toAnalyze.length} activos...`)
