@@ -202,6 +202,7 @@ export async function generateChatResponse(
     anthropometry?: any
     relevantContext?: string
     recentActivity?: string
+    marketData?: string  // NUEVO: Cotizaciones en tiempo real de IOL
   }
 ): Promise<string> {
   const contextPrompt = context ? `
@@ -221,6 +222,11 @@ ${context.recentActivity ? `
 MY RECENT ACTIVITY (Thomas's own actions):
 ${context.recentActivity}
 Use this information to naturally mention what I've been doing if relevant to the conversation.
+` : ''}
+${context.marketData ? `
+MARKET DATA (USE THIS FOR RECOMMENDATIONS):
+${context.marketData}
+Usa estos precios REALES para tus análisis y recomendaciones. Son datos en tiempo real de IOL.
 ` : ''}
 
 ` : ''

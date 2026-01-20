@@ -3,5 +3,19 @@
   "regions": [
     "iad1"
   ],
-  "installCommand": "npm install --legacy-peer-deps"
+  "installCommand": "npm install --legacy-peer-deps",
+  "crons": [
+    {
+      "path": "/api/cron/monitor-positions",
+      "schedule": "*/5 9-18 * * 1-5"
+    },
+    {
+      "path": "/api/cron/scan-opportunities",
+      "schedule": "0 10,14 * * 1-5"
+    },
+    {
+      "path": "/api/cron/daily-report",
+      "schedule": "0 19 * * 1-5"
+    }
+  ]
 }

@@ -5,6 +5,7 @@ import { generateTradeAnalysis, generateChatResponse, generateEmbedding } from '
 import { getWellnessData } from '@/actions/wellness'
 import { getAnthropometryData } from '@/actions/anthropometry'
 import { getPortfolioValue } from '@/actions/trading'
+import { getLiveQuotes } from '@/actions/quotes'
 import { performTrade } from './trading'
 import { revalidatePath } from 'next/cache'
 
@@ -182,11 +183,22 @@ export async function sendChatMessage(conversationId: string | null, message: st
     })) || []
 
     // Recuperar datos de contexto real
-    const [wellness, anthropometry, portfolio] = await Promise.all([
+    const [wellness, anthropometry, portfolio, liveQuotesResult] = await Promise.all([
       getWellnessData(),
       getAnthropometryData(),
-      getPortfolioValue()
+      getPortfolioValue(),
+      getLiveQuotes()
     ])
+
+    // Construir contexto de mercado con precios reales
+    let marketContext = ''
+    if (liveQuotesResult.quotes && liveQuotesResult.quotes.length > 0) {
+      marketContext = 'COTIZACIONES EN TIEMPO REAL (IOL):\n'
+      liveQuotesResult.quotes.forEach((q) => {
+        const changeSign = q.changePercent >= 0 ? '+' : ''
+        marketContext += `- ${q.symbol}: $${q.price.toFixed(2)} (${changeSign}${q.changePercent.toFixed(2)}%) | Max: $${q.high.toFixed(2)} | Min: $${q.low.toFixed(2)}\n`
+      })
+    }
 
     // Recuperar actividad reciente de Thomas
     const [recentTrades, recentDecisions, recentLearnings] = await Promise.all([
@@ -225,6 +237,7 @@ export async function sendChatMessage(conversationId: string | null, message: st
         anthropometry: anthropometry,
         relevantContext,
         recentActivity: recentActivitySummary,
+        marketData: marketContext,  // NUEVO: Cotizaciones en tiempo real
       }
     )
 
