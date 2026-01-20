@@ -259,7 +259,41 @@ export async function sendChatMessage(conversationId: string | null, message: st
     await extractAndSaveLearning(message, response, conversationIdToUse)
 
     // Detectar y ejecutar comandos de trading
-    const multipleIntents = parseMultipleTradingIntents(message)
+    let multipleIntents = parseMultipleTradingIntents(message)
+    
+    // Si no se detectaron intenciones claras, analizar el contexto de la conversación
+    if (!multipleIntents.hasMultipleTrades && multipleIntents.intents.length === 1 && multipleIntents.intents[0].symbol === null) {
+      // Buscar símbolo en la respuesta previa de Thomas
+      const lastAssistantMessage = messages?.filter((m: any) => m.role === 'assistant').pop()
+      if (lastAssistantMessage) {
+        // Buscar símbolo en la respuesta de Thomas
+        const symbolPatterns = [
+          /ypf(d)?/i,
+          /ggal/i,
+          /pamp/i,
+          /bma/i,
+          /bbar/i,
+          /supv/i,
+          /txar/i,
+          /alua/i,
+          /teco2?/i,
+          /merval/i
+        ]
+        
+        for (const pattern of symbolPatterns) {
+          const match = lastAssistantMessage.content.match(pattern)
+          if (match) {
+            const symbol = match[0].toUpperCase()
+            const intent = multipleIntents.intents[0]
+            intent.symbol = symbol
+            intent.confidence += 20 // Aumentar confianza por encontrar símbolo en contexto
+            intent.reasoning += ` (contexto: ${symbol})`
+            break
+          }
+        }
+      }
+    }
+
     console.log('[Thomas Chat] Detected trading intents:', multipleIntents)
 
     if (multipleIntents.hasMultipleTrades) {
