@@ -2,12 +2,20 @@ import { GoogleGenAI } from '@google/genai'
 import { CHAT_ASSISTANT_PROMPT, WELLNESS_TRACKING_PROMPT } from './prompts'
 
 const getAIConfig = () => {
+  const apiKey = process.env.GOOGLE_API_KEY;
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('Thomas AI: [v2.5] Iniciando RECONSTRUCCIÓN PEM DEFINITIVA...');
+  console.log('Thomas AI: [v2.6] Iniciando Configuración Universal...');
 
+  // OPCIÓN 1: API KEY (Gemini API - Recomendado para Vercel)
+  if (apiKey) {
+    console.log('Thomas AI: [v2.6] Usando GOOGLE_API_KEY (Gemini API)');
+    return new GoogleGenAI({ apiKey });
+  }
+
+  // OPCIÓN 2: SERVICE ACCOUNT (Vertex AI)
   if (serviceAccountJson) {
     try {
       let rawJson = serviceAccountJson.trim();
@@ -19,11 +27,8 @@ const getAIConfig = () => {
       let pk = credentials.private_key || credentials.privateKey;
 
       if (typeof pk === 'string') {
-        console.log(`Thomas AI: [v2.5] Detectada llave (longitud original: ${pk.length})`);
-
-        // 1. Extraer solo el contenido Base64 puro
-        // Eliminamos cabeceras, pies, saltos de línea (reales o escapados) y basura
-        const b64 = pk
+        // Extraer Base64 puro
+        let b64 = pk
           .replace(/-----BEGIN PRIVATE KEY-----/g, '')
           .replace(/-----END PRIVATE KEY-----/g, '')
           .replace(/\\n/g, '')
@@ -32,21 +37,28 @@ const getAIConfig = () => {
           .replace(/\s/g, '')
           .trim();
 
-        // 2. Reconstruir el PEM perfectamente según estándar PKCS#8
-        // 64 caracteres por línea según el RFC 7468
+        // CURACIÓN DE BASE64: Si la longitud no es múltiplo de 4, falta padding '='
+        // Esto ocurre frecuentemente por errores de copiado/pegado
+        const missingPadding = b64.length % 4;
+        if (missingPadding > 0) {
+          const paddingToAdd = 4 - missingPadding;
+          b64 = b64 + '='.repeat(paddingToAdd);
+          console.log(`Thomas AI: [v2.6] ADVERTENCIA: Base64 curada (se añadieron ${paddingToAdd} caracteres de padding)`);
+        }
+
+        // Reconstrucción PKCS#8
         const lines = b64.match(/.{1,64}/g) || [];
         const perfectPem = [
           '-----BEGIN PRIVATE KEY-----',
           ...lines,
           '-----END PRIVATE KEY-----',
-          '' // Salto de línea final
+          ''
         ].join('\n');
 
         credentials.private_key = perfectPem;
         credentials.privateKey = perfectPem;
 
-        console.log(`Thomas AI: [v2.5] PEM reconstruido (Base64 puro: ${b64.length} chars)`);
-        console.log(`Thomas AI: [v2.5] Header reconstruido: "${perfectPem.substring(0, 30)}..."`);
+        console.log(`Thomas AI: [v2.6] PEM reconstruido (Base64 final: ${b64.length} chars)`);
       }
 
       const pid = credentials.project_id || project;
@@ -60,14 +72,11 @@ const getAIConfig = () => {
         },
       });
     } catch (e: any) {
-      console.error('Thomas AI: [v2.5] ERROR CRÍTICO:', e.message);
+      console.error('Thomas AI: [v2.6] ERROR CRÍTICO:', e.message);
     }
   }
-  else {
-    console.log('Thomas AI: No se detectó GOOGLE_SERVICE_ACCOUNT_JSON. Usando ADC (Default Credentials).');
-  }
 
-  // Fallback a ADC para desarrollo local
+  console.log('Thomas AI: [v2.6] No se encontró API Key ni Service Account. Usando ADC.');
   return new GoogleGenAI({
     vertexai: true,
     project: project!,
