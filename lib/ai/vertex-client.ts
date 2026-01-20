@@ -6,6 +6,8 @@ const getAIConfig = () => {
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
+  console.log('Thomas AI: Iniciando configuración (v2.2 - Ultra-Robust Key Fix)');
+
   if (serviceAccountJson) {
     try {
       console.log('Thomas AI: Detectada variable GOOGLE_SERVICE_ACCOUNT_JSON, intentando parsear...');
