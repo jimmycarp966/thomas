@@ -6,62 +6,59 @@ const getAIConfig = () => {
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('Thomas AI: Iniciando configuración (v2.3 - FORCE_PEM_FIX)');
+  console.log('Thomas AI: [v2.4] Iniciando configuración robusta de Vertex AI...');
 
   if (serviceAccountJson) {
     try {
-      console.log('Thomas AI: Detectada variable GOOGLE_SERVICE_ACCOUNT_JSON, intentando parsear...');
-
       let rawJson = serviceAccountJson.trim();
-      // Eliminar posibles comillas externas que Vercel a veces añade
+
+      // Limpieza de comillas externas del JSON completo
       if ((rawJson.startsWith('"') && rawJson.endsWith('"')) || (rawJson.startsWith("'") && rawJson.endsWith("'"))) {
         rawJson = rawJson.substring(1, rawJson.length - 1);
       }
 
       const credentials = JSON.parse(rawJson);
 
-      // Normalizar llave privada: puede venir en private_key o privateKey
-      let privateKey = credentials.private_key || credentials.privateKey;
+      // Extraer y normalizar llave privada
+      let pk = credentials.private_key || credentials.privateKey;
 
-      if (typeof privateKey === 'string') {
-        // Limpieza profunda:
-        // 1. Quitar comillas accidentales al inicio/final (común al pegar en Vercel)
-        // 2. Reemplazar los escapes de saltos de línea \\n por caracteres reales \n
-        privateKey = privateKey.trim();
-        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-          privateKey = privateKey.substring(1, privateKey.length - 1);
+      if (typeof pk === 'string') {
+        // 1. Limpieza de escapes: transformar "\\n" literal en "\n" real
+        pk = pk.replace(/\\n/g, '\n');
+
+        // 2. Limpieza de caracteres invisibles/control (excepto saltos de línea y retorno)
+        // Esto elimina posibles caracteres de control que rompen el decoder de OpenSSL
+        pk = pk.replace(/[^\x20-\x7E\n\r]/g, '');
+
+        // 3. Asegurar que empiece y termine limpiamente
+        pk = pk.trim();
+
+        credentials.private_key = pk;
+        credentials.privateKey = pk;
+
+        console.log(`Thomas AI: [v2.4] Llave procesada (Longitud: ${pk.length})`);
+        console.log(`Thomas AI: [v2.4] Header: "${pk.substring(0, 25)}..."`);
+
+        if (!pk.includes('-----BEGIN PRIVATE KEY-----')) {
+          console.error('Thomas AI: [v2.4] ERROR: La llave no tiene el formato PEM esperado (falta BEGIN).');
         }
-        privateKey = privateKey.replace(/\\n/g, '\n');
-
-        credentials.private_key = privateKey;
-        credentials.privateKey = privateKey;
-
-        console.log(`Thomas AI: Llave privada normalizada (Longitud final: ${privateKey.length})`);
-        console.log(`Thomas AI: Header detectado: "${privateKey.substring(0, 30)}..."`);
-        console.log(`Thomas AI: Footer detectado: "...${privateKey.substring(privateKey.length - 30)}"`);
-
-        if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          console.error('Thomas AI: ERROR: La llave no contiene el encabezado PEM esperado.');
-        }
-      } else {
-        console.error('Thomas AI: Error: No se encontró private_key en el JSON de credenciales.');
       }
 
-      const projectIdToUse = credentials.project_id || project;
-      console.log(`Thomas AI: Usando Project ID: ${projectIdToUse}`);
+      const pid = credentials.project_id || project;
 
       return new GoogleGenAI({
         vertexai: true,
-        project: projectIdToUse!,
+        project: pid!,
         location: location,
         googleAuthOptions: {
           credentials,
         },
       });
     } catch (e: any) {
-      console.error('Thomas AI: Error crítico parseando GOOGLE_SERVICE_ACCOUNT_JSON:', e.message);
+      console.error('Thomas AI: [v2.4] ERROR de inicialización:', e.message);
     }
-  } else {
+  }
+  else {
     console.log('Thomas AI: No se detectó GOOGLE_SERVICE_ACCOUNT_JSON. Usando ADC (Default Credentials).');
   }
 
