@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createIOLClient } from '@/lib/trading/iol-client'
 import { generateTradeAnalysis } from '@/lib/ai/vertex-client'
+import { getCircuitBreakerStatus } from '@/lib/trading/circuit-breaker'
 
 // Escanea el mercado y compra automáticamente si encuentra oportunidades
 export async function GET(request: Request) {
@@ -37,6 +38,20 @@ export async function GET(request: Request) {
                 scanned: 0
             })
         }
+
+        const circuitBreakerStatus = await getCircuitBreakerStatus()
+        if (circuitBreakerStatus.isTradingPaused) {
+            console.log(`[ScanOpportunities] 🛑 Circuit Breaker activado: ${circuitBreakerStatus.pauseReason}`)
+            return NextResponse.json({
+                success: true,
+                message: 'Trading paused by circuit breaker',
+                pausedReason: circuitBreakerStatus.pauseReason,
+                pausedUntil: circuitBreakerStatus.pauseUntil,
+                scanned: 0
+            })
+        }
+
+        console.log(`[ScanOpportunities] Circuit Breaker OK - ${circuitBreakerStatus.consecutiveLosses} consecutive losses, ${circuitBreakerStatus.dailyLossPct.toFixed(2)}% daily loss`)
 
         // 2. Obtener portfolio para calcular límites
         const iol = createIOLClient(config.iol_username, config.iol_password, false)
