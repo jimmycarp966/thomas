@@ -260,12 +260,21 @@ export async function sendChatMessage(conversationId: string | null, message: st
 
     // Detectar y ejecutar comandos de trading
     let multipleIntents = parseMultipleTradingIntents(message)
+    console.log('[Thomas Chat] ========== START TRADING INTENT DETECTION ==========')
+    console.log('[Thomas Chat] User message:', message)
+    console.log('[Thomas Chat] Parsed intents:', JSON.stringify(multipleIntents, null, 2))
     
     // Si no se detectaron intenciones claras, analizar el contexto de la conversación
     if (!multipleIntents.hasMultipleTrades && multipleIntents.intents.length === 1 && multipleIntents.intents[0].symbol === null) {
+      console.log('[Thomas Chat] No symbol detected in message, analyzing conversation context...')
+      
       // Buscar símbolo en la respuesta previa de Thomas
       const lastAssistantMessage = messages?.filter((m: any) => m.role === 'assistant').pop()
+      console.log('[Thomas Chat] Last assistant message found:', !!lastAssistantMessage)
+      
       if (lastAssistantMessage) {
+        console.log('[Thomas Chat] Last assistant message content:', lastAssistantMessage.content.substring(0, 200))
+        
         // Buscar símbolo en la respuesta de Thomas
         const symbolPatterns = [
           /ypf(d)?/i,
@@ -280,21 +289,35 @@ export async function sendChatMessage(conversationId: string | null, message: st
           /merval/i
         ]
         
+        console.log('[Thomas Chat] Searching for symbols in last assistant message...')
+        
         for (const pattern of symbolPatterns) {
           const match = lastAssistantMessage.content.match(pattern)
+          console.log(`[Thomas Chat] Testing pattern: ${pattern} -> Match: ${!!match}`)
           if (match) {
             const symbol = match[0].toUpperCase()
             const intent = multipleIntents.intents[0]
             intent.symbol = symbol
             intent.confidence += 20 // Aumentar confianza por encontrar símbolo en contexto
             intent.reasoning += ` (contexto: ${symbol})`
+            console.log('[Thomas Chat] ✅ Symbol found in context:', symbol)
+            console.log('[Thomas Chat] Updated intent:', JSON.stringify(intent, null, 2))
             break
           }
         }
+        
+        if (!multipleIntents.intents[0].symbol) {
+          console.log('[Thomas Chat] ❌ No symbol found in context')
+        }
+      } else {
+        console.log('[Thomas Chat] ❌ No assistant message found in conversation')
       }
+    } else {
+      console.log('[Thomas Chat] Symbol already detected or multiple trades detected')
     }
 
-    console.log('[Thomas Chat] Detected trading intents:', multipleIntents)
+    console.log('[Thomas Chat] Final intents after context analysis:', JSON.stringify(multipleIntents, null, 2))
+    console.log('[Thomas Chat] ========== END TRADING INTENT DETECTION ==========')
 
     if (multipleIntents.hasMultipleTrades) {
       // Ejecutar múltiples trades
@@ -303,11 +326,16 @@ export async function sendChatMessage(conversationId: string | null, message: st
       const tradeResults: any[] = []
       
       for (const intent of multipleIntents.intents) {
+        console.log('[Thomas Chat] Checking if should execute trade:', JSON.stringify(intent, null, 2))
+        console.log('[Thomas Chat] shouldExecuteTrade result:', shouldExecuteTrade(intent))
         if (shouldExecuteTrade(intent)) {
+          console.log('[Thomas Chat] ✅ Trade execution approved, executing...')
           const result = await executeSingleTrade(intent, supabase, conversationIdToUse || '', response)
           if (result) {
             tradeResults.push(result)
           }
+        } else {
+          console.log('[Thomas Chat] ❌ Trade execution NOT approved')
         }
       }
       
@@ -329,8 +357,13 @@ export async function sendChatMessage(conversationId: string | null, message: st
     } else {
       // Ejecutar un solo trade
       const intent = multipleIntents.intents[0]
+      console.log('[Thomas Chat] Checking if should execute single trade:', JSON.stringify(intent, null, 2))
+      console.log('[Thomas Chat] shouldExecuteTrade result:', shouldExecuteTrade(intent))
       if (shouldExecuteTrade(intent)) {
+        console.log('[Thomas Chat] ✅ Single trade execution approved, executing...')
         await executeSingleTrade(intent, supabase, conversationIdToUse || '', response)
+      } else {
+        console.log('[Thomas Chat] ❌ Single trade execution NOT approved')
       }
     }
 
