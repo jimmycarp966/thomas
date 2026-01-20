@@ -6,12 +6,19 @@ const getAIConfig = () => {
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('Thomas AI: Iniciando configuración (v2.2 - Ultra-Robust Key Fix)');
+  console.log('Thomas AI: Iniciando configuración (v2.3 - FORCE_PEM_FIX)');
 
   if (serviceAccountJson) {
     try {
       console.log('Thomas AI: Detectada variable GOOGLE_SERVICE_ACCOUNT_JSON, intentando parsear...');
-      const credentials = JSON.parse(serviceAccountJson);
+
+      let rawJson = serviceAccountJson.trim();
+      // Eliminar posibles comillas externas que Vercel a veces añade
+      if ((rawJson.startsWith('"') && rawJson.endsWith('"')) || (rawJson.startsWith("'") && rawJson.endsWith("'"))) {
+        rawJson = rawJson.substring(1, rawJson.length - 1);
+      }
+
+      const credentials = JSON.parse(rawJson);
 
       // Normalizar llave privada: puede venir en private_key o privateKey
       let privateKey = credentials.private_key || credentials.privateKey;
