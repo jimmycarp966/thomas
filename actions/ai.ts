@@ -156,11 +156,14 @@ export async function sendChatMessage(conversationId: string | null, message: st
       conversationIdToUse = newConversation.id
     }
 
+    const userEmbedding = await generateEmbedding(message)
+
     await supabase.from('chat_messages').insert({
       conversation_id: conversationIdToUse,
       user_id: '00000000-0000-0000-0000-000000000001',
       role: 'user',
       content: message,
+      embedding: userEmbedding,
     })
 
     // RAG: Recuperar información relevante de conversaciones anteriores
@@ -232,7 +235,7 @@ export async function sendChatMessage(conversationId: string | null, message: st
       user_id: '00000000-0000-0000-0000-000000000001',
       role: 'assistant',
       content: response,
-      ai_metadata: { embedding },
+      embedding: embedding, // Corregido: usar columna embedding
     })
 
     // Guardar aprendizajes automáticamente
@@ -240,9 +243,9 @@ export async function sendChatMessage(conversationId: string | null, message: st
 
     revalidatePath('/chat')
     return { success: true, response, conversationId: conversationIdToUse }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending chat message:', error)
-    return { error: 'failed to send message' }
+    return { error: error.message || 'failed to send message' }
   }
 }
 
@@ -299,7 +302,7 @@ Extrae 1-3 aprendizajes importantes en formato JSON:
 {
   "learnings": [
     {
-      "category": "trading_strategy" | "risk_management" | "market_analysis" | "psychology" | "other",
+      "learning_type": "success_pattern" | "failure_pattern" | "market_insight" | "user_preference" | "other",
       "insight": "Descripción del aprendizaje",
       "confidence": 0-100
     }
@@ -320,13 +323,12 @@ Extrae 1-3 aprendizajes importantes en formato JSON:
       if (learning.confidence >= 70) {
         await supabase.from('ai_learnings').insert({
           user_id: '00000000-0000-0000-0000-000000000001',
-          category: learning.category,
-          insight: learning.insight,
-          confidence: learning.confidence,
+          learning_type: learning.learning_type,
+          content: { insight: learning.insight },
+          importance_score: learning.confidence,
           source: 'chat_conversation',
           source_id: conversationId,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         })
       }
     }
