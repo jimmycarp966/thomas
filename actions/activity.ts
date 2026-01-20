@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export type ActivityEvent = {
     id: string
-    type: 'trade' | 'decision' | 'learning' | 'notification'
+    type: 'trade' | 'decision' | 'learning' | 'notification' | 'chat'
     title: string
     description: string
     timestamp: string
@@ -46,6 +46,18 @@ export async function getActivityFeed(limit: number = 50): Promise<{ events: Act
         const { data: notifications } = await supabase
             .from('notifications')
             .select('*')
+            .order('created_at', { ascending: false })
+            .limit(limit)
+
+        // Obtener mensajes del chat
+        const { data: chatMessages } = await supabase
+            .from('chat_messages')
+            .select(`
+                *,
+                chat_conversations (
+                    title
+                )
+            `)
             .order('created_at', { ascending: false })
             .limit(limit)
 
@@ -111,6 +123,22 @@ export async function getActivityFeed(limit: number = 50): Promise<{ events: Act
                 metadata: notif,
                 icon: 'notifications',
                 color: notif.read ? 'text-gray-400' : 'text-yellow-500',
+            })
+        })
+
+        // Mensajes del chat
+        chatMessages?.forEach((msg: any) => {
+            const isUser = msg.role === 'user'
+            const conversationTitle = (msg.chat_conversations as any)?.title || 'Nueva conversación'
+            events.push({
+                id: msg.id,
+                type: 'chat',
+                title: isUser ? `💬 Tú: ${conversationTitle}` : `🤖 Thomas: ${conversationTitle}`,
+                description: msg.content?.slice(0, 100) + (msg.content?.length > 100 ? '...' : ''),
+                timestamp: msg.created_at,
+                metadata: msg,
+                icon: isUser ? 'person' : 'smart_toy',
+                color: isUser ? 'text-blue-500' : 'text-primary',
             })
         })
 

@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 export default function ActivityPage() {
     const [loading, setLoading] = useState(true)
     const [events, setEvents] = useState<ActivityEvent[]>([])
-    const [filter, setFilter] = useState<'all' | 'trade' | 'decision' | 'learning' | 'notification'>('all')
+    const [filter, setFilter] = useState<'all' | 'trade' | 'decision' | 'learning' | 'notification' | 'chat'>('all')
 
     useEffect(() => {
         loadActivity()
@@ -64,6 +64,7 @@ export default function ActivityPage() {
                     { key: 'decision', label: 'Análisis', icon: 'auto_awesome' },
                     { key: 'learning', label: 'Aprendizajes', icon: 'psychology' },
                     { key: 'notification', label: 'Alertas', icon: 'notifications' },
+                    { key: 'chat', label: 'Chat', icon: 'chat' },
                 ].map((f) => (
                     <button
                         key={f.key}
@@ -101,7 +102,9 @@ export default function ActivityPage() {
                                                 ? 'bg-primary'
                                                 : event.type === 'learning'
                                                     ? 'bg-purple-500'
-                                                    : 'bg-yellow-500'
+                                                    : event.type === 'chat'
+                                                        ? 'bg-blue-500'
+                                                        : 'bg-yellow-500'
                                         }`}
                                 ></div>
 
@@ -116,7 +119,9 @@ export default function ActivityPage() {
                                                             ? 'bg-primary/20'
                                                             : event.type === 'learning'
                                                                 ? 'bg-purple-500/20'
-                                                                : 'bg-yellow-500/20'
+                                                                : event.type === 'chat'
+                                                                    ? 'bg-blue-500/20'
+                                                                    : 'bg-yellow-500/20'
                                                     }`}
                                             >
                                                 <span className={`material-symbols-outlined text-lg ${event.color}`}>
