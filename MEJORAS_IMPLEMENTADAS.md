@@ -10,7 +10,7 @@ Se han implementado las siguientes mejoras avanzadas para el sistema de trading 
 
 **Mejoras:**
 - **Trading:** Re-arquitectura de `actions/trading.ts` para soportar el modo de usuario único (`000...001`) si no hay sesión activa. Esto permite el funcionamiento del dashboard y operaciones de trading sin login previo.
-- **RAG:** Corregida la discrepancia de nombres de parámetros entre el código JS (`lib/ai/rag.ts`) y las funciones SQL de Supabase.
+- **RAG:** Corregida la discrepancia de nombres de parámetros entre el código JS (`lib/ai/rag.ts` y `actions/ai.ts`) y las funciones SQL de Supabase (`p_match_count` -> `p_match_limit`).
 - **Database:** Implementada la función RPC `match_chat_messages` para permitir la búsqueda vectorial en el historial de chat (funcionalidad que estaba ausente).
 - **Consistencia:** Actualizadas las funciones de bienestar, antropometría y trading para asegurar que el `user_id` sea siempre el del usuario único configurado, evitando errores de RLS.
 - **IOL:** Corregidas inconsistencias en la detección de moneda (`Peso Argentino` vs `peso_Argentino`) para asegurar la visualización del balance en el dashboard.
