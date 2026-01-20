@@ -255,17 +255,18 @@ export class IOLClient {
   ) {
     try {
       const body: any = {
-        ticker,
-        operacion: operation,
+        simbolo: ticker,
+        mercado: mercado,
+        tipoOrden: orderType === 'Limite' ? 'PRECIO_LIMITE' : 'PRECIO_MERCADO',
         cantidad: quantity,
         precio: orderType === 'Limite' ? price : undefined,
-        tipoOrden: orderType,
-        mercado,
-        plazo,
+        plazo: plazo,
         validez: validez || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       }
 
-      return await this.request('/Orden', 'POST', body)
+      // El endpoint correcto es /operar/comprar o /operar/vender
+      const endpoint = operation === 'Compra' ? '/operar/comprar' : '/operar/vender'
+      return await this.request(endpoint, 'POST', body)
     } catch (error) {
       console.error(`Error creating order for ${ticker}:`, error)
       throw error
