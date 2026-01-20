@@ -18,6 +18,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="dark">
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" />
+      </head>
       <body className={inter.className}>
         <div className="min-h-screen bg-background dark flex">
           <Sidebar />
