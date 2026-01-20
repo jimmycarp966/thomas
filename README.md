@@ -8,8 +8,8 @@ Asistente personal de IA diseñado para optimizar el trading inteligente, el seg
 - **Aprendizaje Continuo**: Sistema RAG que evoluciona con cada trade y conversación.
 - **Trading Agéntico**: Ejecución autónoma inteligente basada en niveles de confianza configurables.
 - **XAI (Explainable AI)**: Justificaciones técnicas detalladas para cada decisión de inversión.
-- **Bio-Profile**: Seguimiento antropométrico exhaustivo (composición corporal, medidas, bio-sensores).
-- **Optimización de Bienestar**: Coaching de salud basado en ritmos circadianos y ayuno intermitente.
+- **Bio-Profile**: Seguimiento antropométrico con cálculo automático de % de grasa (Fórmula Marina) e IMC.
+- **Optimización de Bienestar**: Coaching de salud con Dietas Semanales y Rutinas de Fuerza generadas por IA (Gemini 2.0).
 - **Arquitectura Personal**: Diseñado como un asistente dedicado y privado (Single User).
 
 ## 🛠️ Stack

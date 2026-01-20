@@ -19,6 +19,8 @@ export async function getAnthropometryData() {
             return {
                 weight: 0,
                 body_fat_percentage: 0,
+                height_cm: 170, // Default
+                gender: 'male' as const,
                 neck: 0,
                 waist: 0,
                 hip: 0,
@@ -40,6 +42,8 @@ export async function getAnthropometryData() {
 export async function saveAnthropometryData(data: {
     weight?: number
     body_fat_percentage?: number
+    height_cm?: number
+    gender?: 'male' | 'female'
     neck?: number
     waist?: number
     hip?: number

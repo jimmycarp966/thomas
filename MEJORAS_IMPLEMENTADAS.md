@@ -217,3 +217,25 @@ Para más información, revisar los archivos de implementación:
 - `actions/trading-learning.ts` - Aprendizaje de trading
 - `actions/auto-trading.ts` - Auto trading y seguridad
 - `app/api/cron/execute-decisions/route.ts` - Cron job endpoint
+
+## Thomas Health Pro - Enero 2026
+
+Mejora integral del módulo de Bienestar para convertir a Thomas en un coach de salud de élite.
+
+### 1. Bio-Perfil Avanzado
+- **Cálculo de Grasa Corporal (U.S. Navy Method)**: Implementación de fórmulas antropométricas automáticas basadas en altura, cuello, cintura y cadera.
+- **Cálculo de IMC**: Seguimiento del Índice de Masa Corporal con categorización automática.
+- **UI de Medición Pro**: Nuevo formulario con iconos dinámicos y feedback visual inmediato de composición corporal.
+
+### 2. Nutrición Inteligente (AI Nutrition)
+- **Generación de Dietas Semanales**: Integración con Gemini 2.0 Flash para crear planes de 7 días optimizados para el rendimiento cognitivo y quema de grasa.
+- **Macros y Calorías Obj.**: Cálculo automático de objetivos nutricionales por la IA.
+- **Base de Datos de Dietas**: Persistencia completa para historial y seguimiento.
+
+### 3. Home Fitness AI
+- **Rutinas de Fuerza en Casa**: Generación de ejercicios personalizados basados en el perfil del usuario utilizando Gemini.
+- **Diseño Bento-Grid**: Visualización premium de planes de entrenamiento integrados en el dashboard de bienestar.
+
+### 4. Infraestructura Salud
+- **Nuevas Tablas Supabase**: `health_diets`, `health_workouts`, y `health_logs`.
+- **Seguridad RLS**: Políticas estrictas para proteger la privacidad de los datos biométricos.

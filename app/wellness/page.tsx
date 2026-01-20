@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { getWellnessData, saveWellnessData } from '@/actions/wellness'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import AnthropometryForm from '@/components/AnthropometryForm'
+import DietPlanView from '@/components/wellness/DietPlanView'
+import WorkoutPlanView from '@/components/wellness/WorkoutPlanView'
 
 export default function WellnessPage() {
   const [loading, setLoading] = useState(true)
@@ -23,7 +25,7 @@ export default function WellnessPage() {
   const [exerciseMinutes, setExerciseMinutes] = useState(0)
   const [exerciseIntensity, setExerciseIntensity] = useState<'SEDENTARY' | 'MODERATE' | 'HIGH'>('SEDENTARY')
   const [wellnessScore, setWellnessScore] = useState(0)
-  const [activeTab, setActiveTab] = useState<'general' | 'anthropometry'>('general')
+  const [activeTab, setActiveTab] = useState<'general' | 'anthropometry' | 'nutrition'>('general')
 
   useEffect(() => {
     loadWellnessData()
@@ -188,6 +190,14 @@ export default function WellnessPage() {
           Perfil Biométrico
           {activeTab === 'anthropometry' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
         </button>
+        <button
+          onClick={() => setActiveTab('nutrition')}
+          className={`pb-4 px-2 text-sm font-medium transition-all relative ${activeTab === 'nutrition' ? 'text-primary' : 'text-gray-400 hover:text-white'
+            }`}
+        >
+          Dieta y Entrenamiento
+          {activeTab === 'nutrition' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+        </button>
       </div>
 
       {activeTab === 'general' ? (
@@ -286,7 +296,6 @@ export default function WellnessPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* CARD: EJERCICIO PRO */}
             <Card className="bg-surface-dark border-border-dark overflow-hidden group">
               <div className="h-1 w-full bg-gradient-to-r from-orange-500 to-red-500" />
               <CardHeader className="pb-2">
@@ -325,7 +334,6 @@ export default function WellnessPage() {
               </CardContent>
             </Card>
 
-            {/* CARD: SUEÑO PRO */}
             <Card className="bg-surface-dark border-border-dark overflow-hidden group">
               <div className="h-1 w-full bg-gradient-to-r from-blue-600 to-indigo-600" />
               <CardHeader className="pb-2">
@@ -364,7 +372,6 @@ export default function WellnessPage() {
               </CardContent>
             </Card>
 
-            {/* CARD: INDICADOR CIRCADIANO */}
             <Card className="bg-surface-dark border-border-dark overflow-hidden relative">
               <CardHeader className="pb-2">
                 <CardTitle className="text-white text-lg">Estado Circadiano</CardTitle>
@@ -428,8 +435,17 @@ export default function WellnessPage() {
             </Button>
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'anthropometry' ? (
         <AnthropometryForm />
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="xl:col-span-3 space-y-6">
+            <DietPlanView />
+          </div>
+          <div className="xl:col-span-1">
+            <WorkoutPlanView />
+          </div>
+        </div>
       )}
     </div>
   )
