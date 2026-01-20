@@ -8,26 +8,47 @@ const getAIConfig = () => {
 
   if (serviceAccountJson) {
     try {
+      console.log('Thomas AI: Detectada variable GOOGLE_SERVICE_ACCOUNT_JSON, intentando parsear...');
       const credentials = JSON.parse(serviceAccountJson);
-      // Normalizar llave privada (reemplazar literal \n por saltos de línea reales)
-      if (credentials.private_key) {
-        credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+
+      // Normalizar llave privada: puede venir en private_key o privateKey
+      let privateKey = credentials.private_key || credentials.privateKey;
+
+      if (typeof privateKey === 'string') {
+        // Asegurar que los saltos de línea sean reales. 
+        // Vercel a veces escapa los backslashes al guardar variables de entorno.
+        privateKey = privateKey.replace(/\\n/g, '\n');
+
+        credentials.private_key = privateKey;
+        credentials.privateKey = privateKey;
+
+        console.log(`Thomas AI: Llave privada normalizada (longitud: ${privateKey.length})`);
+        if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+          console.warn('Thomas AI: ADVERTENCIA: La llave privada no parece tener el formato PEM correcto.');
+        }
+      } else {
+        console.error('Thomas AI: Error: No se encontró private_key en el JSON de credenciales.');
       }
+
+      const projectIdToUse = credentials.project_id || project;
+      console.log(`Thomas AI: Usando Project ID: ${projectIdToUse}`);
 
       return new GoogleGenAI({
         vertexai: true,
-        project: project!,
+        project: projectIdToUse!,
         location: location,
         googleAuthOptions: {
           credentials,
         },
       });
-    } catch (e) {
-      console.error('Error parsing GOOGLE_SERVICE_ACCOUNT_JSON:', e);
+    } catch (e: any) {
+      console.error('Thomas AI: Error crítico parseando GOOGLE_SERVICE_ACCOUNT_JSON:', e.message);
     }
+  } else {
+    console.log('Thomas AI: No se detectó GOOGLE_SERVICE_ACCOUNT_JSON. Usando ADC (Default Credentials).');
   }
 
-  // Fallback a ADC (Application Default Credentials) para desarrollo local
+  // Fallback a ADC para desarrollo local
   return new GoogleGenAI({
     vertexai: true,
     project: project!,
