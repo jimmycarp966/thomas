@@ -63,7 +63,7 @@ export default function DashboardPage() {
 
   // Calcular composición por tipo de activo
   const assetDistribution = portfolioAssets.reduce((acc: any, asset: any) => {
-    const type = asset.assetType || 'Otros'
+    const type = (asset.assetType === 'Cash' || asset.assetType === 'Efectivo') ? 'Liquidez' : (asset.assetType || 'Otros')
     if (!acc[type]) acc[type] = 0
     acc[type] += asset.totalValue || 0
     return acc
@@ -77,6 +77,10 @@ export default function DashboardPage() {
       percentage: totalPortfolioValue > 0 ? ((value as number) / totalPortfolioValue) * 100 : 0
     }))
     .sort((a, b) => b.value - a.value)
+
+  const availableCash = portfolioAssets
+    .filter(a => a.assetType === 'Cash')
+    .reduce((sum, a) => sum + (a.totalValue || 0), 0)
 
   const colors = ['bg-primary', 'bg-emerald-500', 'bg-blue-500', 'bg-purple-500', 'bg-orange-500']
 
@@ -134,14 +138,25 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-xl bg-surface-dark border border-border-dark hover:border-primary/30 transition-colors group">
           <div className="flex justify-between items-start mb-2">
-            <p className="text-gray-400 text-sm font-medium">Valor del Portafolio</p>
+            <p className="text-gray-400 text-sm font-medium">Patrimonio Total</p>
             <span className="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors text-lg">account_balance_wallet</span>
           </div>
-          <h3 className="text-2xl font-bold text-white tracking-tight mb-1">${stats?.portfolioValue?.toFixed(2) || '0.00'}</h3>
+          <h3 className="text-2xl font-bold text-white tracking-tight mb-1">${totalPortfolioValue?.toFixed(2) || '0.00'}</h3>
           <div className={`flex items-center gap-1 text-xs font-medium ${stats?.portfolioChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
             <span className="material-symbols-outlined text-sm">{stats?.portfolioChange >= 0 ? 'trending_up' : 'trending_down'}</span>
             <span>{stats?.portfolioChange >= 0 ? '+' : ''}{stats?.portfolioChange?.toFixed(2) || '0.00'}%</span>
             <span className="text-gray-500 ml-1">vs ayer</span>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-xl bg-surface-dark border border-border-dark hover:border-primary/30 transition-colors group">
+          <div className="flex justify-between items-start mb-2">
+            <p className="text-gray-400 text-sm font-medium">Dinero Disponible</p>
+            <span className="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors text-lg">account_balance</span>
+          </div>
+          <h3 className="text-2xl font-bold text-emerald-500 tracking-tight mb-1">${availableCash?.toFixed(2) || '0.00'}</h3>
+          <div className="flex items-center gap-1 text-gray-400 text-[10px] font-medium uppercase tracking-wider">
+            <span>Listo para operar</span>
           </div>
         </div>
 

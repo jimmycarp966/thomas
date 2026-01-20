@@ -140,7 +140,7 @@ export async function getDetailedPortfolio() {
 
     const assets: any[] = []
 
-    // IOL Assets
+    // IOL Assets & Cash
     if (config.iol_username && config.iol_password) {
       try {
         const iol = createIOLClient(
@@ -148,8 +148,14 @@ export async function getDetailedPortfolio() {
           config.iol_password,
           true
         )
-        const portfolio = await iol.getPortfolio()
 
+        // Peticiones en paralelo para mayor velocidad
+        const [portfolio, accountState] = await Promise.all([
+          iol.getPortfolio(),
+          iol.getAccountState()
+        ])
+
+        // 1. Agregar activos (Títulos)
         if (portfolio?.activos) {
           portfolio.activos.forEach((asset: any) => {
             assets.push({
@@ -162,27 +168,43 @@ export async function getDetailedPortfolio() {
             })
           })
         }
+
+        // 2. Agregar efectivo (Liquidez IOL)
+        if (accountState?.cuentas) {
+          accountState.cuentas.forEach((cuenta: any) => {
+            if (cuenta.disponible > 0) {
+              const symbol = cuenta.moneda === 'Peso Argentino' ? 'ARS' : 'USD'
+              assets.push({
+                symbol: symbol,
+                quantity: cuenta.disponible,
+                lastPrice: 1,
+                totalValue: cuenta.disponible,
+                exchange: 'iol',
+                assetType: 'Cash'
+              })
+            }
+          })
+        }
       } catch (error) {
         console.error('Error fetching IOL portfolio details:', error)
       }
     }
 
-    // Binance Assets (Mocked or simplified for now as per base implementation)
-    // In a real scenario, we'd loop through Binance balance
+    // Binance Assets & Liquidity
     if (config.binance_api_key && config.binance_api_secret) {
       try {
         const binance = createBinanceClient(config.binance_api_key, config.binance_api_secret)
         const balance = await binance.getBalance()
-        // Binance usually returns an object with asset as key
+
         Object.entries(balance).forEach(([symbol, data]: [string, any]) => {
           if (data.total > 0) {
             assets.push({
               symbol: symbol,
               quantity: data.total,
-              lastPrice: 0, // In Binance we might need separate quotes, but for now we follow the structure
-              totalValue: data.total, // Simplified
+              lastPrice: 0, // Simplified
+              totalValue: data.total, // Simplified valuation for now
               exchange: 'binance',
-              assetType: 'crypto'
+              assetType: (symbol === 'USDT' || symbol === 'USDC' || symbol === 'BUSD') ? 'Cash' : 'crypto'
             })
           }
         })

@@ -326,6 +326,15 @@ export class IOLClient {
     }
   }
 
+  async getAccountState() {
+    try {
+      return await this.request('/EstadodeCuenta')
+    } catch (error) {
+      console.error('Error fetching account state:', error)
+      throw error
+    }
+  }
+
   async getTechnicalIndicators(ticker: string, indicators: string[] = ['RSI', 'MACD', 'EMA']) {
     console.warn('getTechnicalIndicators() is experimental - endpoint not confirmed in official IOL API v2 documentation')
     try {
