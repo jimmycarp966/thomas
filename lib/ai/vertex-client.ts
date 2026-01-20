@@ -7,12 +7,17 @@ const getAIConfig = () => {
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('Thomas AI: [v2.6] Iniciando Configuración Universal...');
+  console.log('Thomas AI: [v2.7] Iniciando Configuración Universal...');
 
   // OPCIÓN 1: API KEY (Gemini API - Recomendado para Vercel)
+  // IMPORTANTE: Al usar API Key, NO debemos pasar project ni location,
+  // y debemos asegurar que vertexai sea false para evitar el endpoint de GCP.
   if (apiKey) {
-    console.log('Thomas AI: [v2.6] Usando GOOGLE_API_KEY (Gemini API)');
-    return new GoogleGenAI({ apiKey });
+    console.log('Thomas AI: [v2.7] Usando GOOGLE_API_KEY (Gemini API / AI Studio)');
+    return new GoogleGenAI({
+      apiKey,
+      vertexai: false // Forzar Gemini API, no Vertex
+    });
   }
 
   // OPCIÓN 2: SERVICE ACCOUNT (Vertex AI)
@@ -37,13 +42,12 @@ const getAIConfig = () => {
           .replace(/\s/g, '')
           .trim();
 
-        // CURACIÓN DE BASE64: Si la longitud no es múltiplo de 4, falta padding '='
-        // Esto ocurre frecuentemente por errores de copiado/pegado
+        // CURACIÓN DE BASE64
         const missingPadding = b64.length % 4;
         if (missingPadding > 0) {
           const paddingToAdd = 4 - missingPadding;
           b64 = b64 + '='.repeat(paddingToAdd);
-          console.log(`Thomas AI: [v2.6] ADVERTENCIA: Base64 curada (se añadieron ${paddingToAdd} caracteres de padding)`);
+          console.log(`Thomas AI: [v2.7] base64 curada (+${paddingToAdd})`);
         }
 
         // Reconstrucción PKCS#8
@@ -57,11 +61,10 @@ const getAIConfig = () => {
 
         credentials.private_key = perfectPem;
         credentials.privateKey = perfectPem;
-
-        console.log(`Thomas AI: [v2.6] PEM reconstruido (Base64 final: ${b64.length} chars)`);
       }
 
       const pid = credentials.project_id || project;
+      console.log(`Thomas AI: [v2.7] Usando Vertex AI (Project: ${pid})`);
 
       return new GoogleGenAI({
         vertexai: true,
@@ -72,11 +75,11 @@ const getAIConfig = () => {
         },
       });
     } catch (e: any) {
-      console.error('Thomas AI: [v2.6] ERROR CRÍTICO:', e.message);
+      console.error('Thomas AI: [v2.7] ERROR:', e.message);
     }
   }
 
-  console.log('Thomas AI: [v2.6] No se encontró API Key ni Service Account. Usando ADC.');
+  console.log('Thomas AI: [v2.7] Fallback: Usando ADC.');
   return new GoogleGenAI({
     vertexai: true,
     project: project!,
