@@ -7,7 +7,7 @@ const getAIConfig = () => {
   const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
   const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
 
-  console.log('Thomas AI: [v2.7] Iniciando Configuración Universal...');
+  console.log('Thomas AI: [v2.8] Iniciando Configuración (Docs Verified)...');
 
   // OPCIÓN 1: API KEY (Gemini API - Recomendado para Vercel)
   // IMPORTANTE: Al usar API Key, NO debemos pasar project ni location,
@@ -91,27 +91,30 @@ const ai = getAIConfig();
 
 export async function generateAIResponse(prompt: string): Promise<string> {
   try {
+    // Usar modelo estable según documentación oficial
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',  // Modelo estable (sin -exp)
       contents: prompt,
     })
     return response.text || ''
   } catch (error: any) {
-    console.error('Error generating AI response:', error)
+    console.error('Thomas AI: Error en generateContent:', error)
     throw new Error(`AI Response failed: ${error.message || 'unknown error'}`)
   }
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
+    // Según documentación: contents puede ser string o array
     const response = await ai.models.embedContent({
       model: 'text-embedding-004',
       contents: text,
     })
+    // Estructura de respuesta según docs: embeddings[0].values
     const embeddings = response.embeddings
     return embeddings?.[0]?.values || []
   } catch (error: any) {
-    console.error('Error generating embedding:', error)
+    console.error('Thomas AI: Error en embedContent:', error)
     throw new Error(`Embedding failed: ${error.message || 'unknown error'}`)
   }
 }
