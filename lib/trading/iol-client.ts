@@ -272,6 +272,22 @@ export class IOLClient {
     }
   }
 
+  /**
+   * Helper para crear orden de compra
+   */
+  async placeBuyOrder(ticker: string, quantity: number, price?: number) {
+    console.log(`[IOLClient] Ejecutando COMPRA: ${ticker} x${quantity} @ $${price || 'mercado'}`)
+    return this.createOrder(ticker, 'Compra', quantity, price, price ? 'Limite' : 'Mercado')
+  }
+
+  /**
+   * Helper para crear orden de venta
+   */
+  async placeSellOrder(ticker: string, quantity: number, price?: number) {
+    console.log(`[IOLClient] Ejecutando VENTA: ${ticker} x${quantity} @ $${price || 'mercado'}`)
+    return this.createOrder(ticker, 'Venta', quantity, price, price ? 'Limite' : 'Mercado')
+  }
+
   async getOpenOrders() {
     try {
       return await this.request('/Ordenes')
