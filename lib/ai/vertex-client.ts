@@ -15,16 +15,24 @@ const getAIConfig = () => {
       let privateKey = credentials.private_key || credentials.privateKey;
 
       if (typeof privateKey === 'string') {
-        // Asegurar que los saltos de línea sean reales. 
-        // Vercel a veces escapa los backslashes al guardar variables de entorno.
+        // Limpieza profunda:
+        // 1. Quitar comillas accidentales al inicio/final (común al pegar en Vercel)
+        // 2. Reemplazar los escapes de saltos de línea \\n por caracteres reales \n
+        privateKey = privateKey.trim();
+        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+          privateKey = privateKey.substring(1, privateKey.length - 1);
+        }
         privateKey = privateKey.replace(/\\n/g, '\n');
 
         credentials.private_key = privateKey;
         credentials.privateKey = privateKey;
 
-        console.log(`Thomas AI: Llave privada normalizada (longitud: ${privateKey.length})`);
+        console.log(`Thomas AI: Llave privada normalizada (Longitud final: ${privateKey.length})`);
+        console.log(`Thomas AI: Header detectado: "${privateKey.substring(0, 30)}..."`);
+        console.log(`Thomas AI: Footer detectado: "...${privateKey.substring(privateKey.length - 30)}"`);
+
         if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          console.warn('Thomas AI: ADVERTENCIA: La llave privada no parece tener el formato PEM correcto.');
+          console.error('Thomas AI: ERROR: La llave no contiene el encabezado PEM esperado.');
         }
       } else {
         console.error('Thomas AI: Error: No se encontró private_key en el JSON de credenciales.');
