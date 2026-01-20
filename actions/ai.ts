@@ -259,7 +259,7 @@ async function retrieveRelevantContext(query: string): Promise<string> {
         p_embedding: queryEmbedding,
         p_user_id: '00000000-0000-0000-0000-000000000001',
         p_match_threshold: 0.7,
-        p_match_count: 5
+        p_match_limit: 5
       })
 
     if (!relevantMessages || relevantMessages.length === 0) {
