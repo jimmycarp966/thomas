@@ -1,11 +1,36 @@
 import { GoogleGenAI } from '@google/genai'
 import { CHAT_ASSISTANT_PROMPT, WELLNESS_TRACKING_PROMPT } from './prompts'
 
-const ai = new GoogleGenAI({
-  vertexai: true,
-  project: process.env.GOOGLE_CLOUD_PROJECT_ID!,
-  location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
-})
+const getAIConfig = () => {
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const project = process.env.GOOGLE_CLOUD_PROJECT_ID;
+  const location = process.env.GOOGLE_CLOUD_LOCATION || 'us-central1';
+
+  if (serviceAccountJson) {
+    try {
+      const credentials = JSON.parse(serviceAccountJson);
+      return new GoogleGenAI({
+        vertexai: true,
+        project: project!,
+        location: location,
+        googleAuthOptions: {
+          credentials,
+        },
+      });
+    } catch (e) {
+      console.error('Error parsing GOOGLE_SERVICE_ACCOUNT_JSON:', e);
+    }
+  }
+
+  // Fallback a ADC (Application Default Credentials) para desarrollo local
+  return new GoogleGenAI({
+    vertexai: true,
+    project: project!,
+    location: location,
+  });
+};
+
+const ai = getAIConfig();
 
 export async function generateAIResponse(prompt: string): Promise<string> {
   try {
@@ -14,9 +39,9 @@ export async function generateAIResponse(prompt: string): Promise<string> {
       contents: prompt,
     })
     return response.text || ''
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating AI response:', error)
-    throw new Error('Failed to generate AI response')
+    throw new Error(`AI Response failed: ${error.message || 'unknown error'}`)
   }
 }
 
@@ -28,9 +53,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     })
     const embeddings = response.embeddings
     return embeddings?.[0]?.values || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating embedding:', error)
-    throw new Error('Failed to generate embedding')
+    throw new Error(`Embedding failed: ${error.message || 'unknown error'}`)
   }
 }
 
