@@ -9,6 +9,11 @@ const getAIConfig = () => {
   if (serviceAccountJson) {
     try {
       const credentials = JSON.parse(serviceAccountJson);
+      // Normalizar llave privada (reemplazar literal \n por saltos de línea reales)
+      if (credentials.private_key) {
+        credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+      }
+
       return new GoogleGenAI({
         vertexai: true,
         project: project!,
