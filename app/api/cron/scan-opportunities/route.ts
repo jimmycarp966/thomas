@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createIOLClient } from '@/lib/trading/iol-client'
-import { generateTradeAnalysis } from '@/lib/ai/vertex-client'
+import { analyzeWithConsensus } from '@/lib/ai/multi-model'
 import { getCircuitBreakerStatus } from '@/lib/trading/circuit-breaker'
 
 // Escanea el mercado y compra automáticamente si encuentra oportunidades
@@ -91,8 +91,8 @@ export async function GET(request: Request) {
                     previousClose: quote.apertura
                 }
 
-                // Analizar con IA
-                const analysis = await generateTradeAnalysis(
+                // Analizar con MULTI-MODEL CONSENSUS (Claude + Gemini + GLM)
+                const consensus = await analyzeWithConsensus(
                     symbol,
                     'stock',
                     marketData,
@@ -100,15 +100,21 @@ export async function GET(request: Request) {
                     80 // wellness score default
                 )
 
-                console.log(`[ScanOpportunities] ${symbol}: ${analysis.decision} (${analysis.confidence}%)`)
+                // Log each model's vote
+                console.log(`[ScanOpportunities] 🧠 ${symbol} Multi-Model Analysis:`)
+                for (const a of consensus.analyses) {
+                    const emoji = a.model === 'claude' ? '🟣' : a.model === 'gemini' ? '🔵' : '🟢'
+                    console.log(`  ${emoji} ${a.model}: ${a.decision} (${a.confidence}%)`)
+                }
+                console.log(`  ➡️ CONSENSUS: ${consensus.finalDecision} (${consensus.finalConfidence}%) [${consensus.consensusLevel}]`)
 
-                // Solo comprar si confianza >= 75% y es BUY
-                if (analysis.decision === 'BUY' && analysis.confidence >= 75) {
+                // Solo comprar si el CONSENSO dice BUY y shouldExecute es true
+                if (consensus.shouldExecute && consensus.finalDecision === 'BUY') {
                     const entryPrice = quote.ultimoPrecio
                     const quantity = Math.floor(maxPositionValue / entryPrice)
 
                     if (quantity > 0 && entryPrice * quantity <= maxPositionValue) {
-                        console.log(`[ScanOpportunities] 🟢 AUTO-COMPRA: ${symbol} x${quantity} @ $${entryPrice}`)
+                        console.log(`[ScanOpportunities] 🟢 MULTI-MODEL AUTO-COMPRA: ${symbol} x${quantity} @ $${entryPrice}`)
 
                         // Ejecutar compra
                         try {
@@ -128,12 +134,13 @@ export async function GET(request: Request) {
                                 status: 'open'
                             })
 
-                            // Notificar
+                            // Notificar con detalle multi-modelo
+                            const modelVotes = consensus.analyses.map(a => `${a.model}:${a.decision}`).join(', ')
                             await supabase.from('notifications').insert({
                                 user_id: '00000000-0000-0000-0000-000000000001',
                                 type: 'trade_executed',
-                                title: `AUTO-COMPRA: ${symbol}`,
-                                message: `Compra automática: ${quantity} acciones @ $${entryPrice.toFixed(2)}. Confianza: ${analysis.confidence}%. Stop-loss: -5%. Take-profit: +10%.`,
+                                title: `🧠 MULTI-MODEL AUTO-COMPRA: ${symbol}`,
+                                message: `Compra automática con consenso ${consensus.consensusLevel}: ${quantity} acciones @ $${entryPrice.toFixed(2)}. Confianza: ${consensus.finalConfidence}% [${modelVotes}]. Stop-loss: -5%. Take-profit: +10%.`,
                                 read: false
                             })
 
@@ -142,8 +149,10 @@ export async function GET(request: Request) {
                                 action: 'BUY',
                                 quantity,
                                 price: entryPrice,
-                                confidence: analysis.confidence,
-                                reasoning: analysis.reasoning
+                                confidence: consensus.finalConfidence,
+                                consensusLevel: consensus.consensusLevel,
+                                modelVotes: consensus.analyses.map(a => ({ model: a.model, decision: a.decision, confidence: a.confidence })),
+                                reasoning: consensus.reasoning
                             })
                         } catch (buyError: any) {
                             console.error(`[ScanOpportunities] Error comprando ${symbol}:`, buyError)
