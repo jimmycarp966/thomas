@@ -1,48 +1,51 @@
 import { NextResponse } from 'next/server'
-import { analyzeWithConsensus } from '@/lib/ai/multi-model'
+import { analyzeWithConsensus, ConsensusResult } from '@/lib/ai/multi-model'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 /**
  * Manual Multi-Model Analysis API
  * Allows triggering analysis via WhatsApp or web interface
+ * FIXED: Proper typing and use of body.assetSymbol
  */
 export async function POST(request: Request) {
-  const body = await request.json()
-
-  const { assetSymbol, assetType, marketData } = body
-
-  // Fallback market data if not provided
-  const defaultMarketData = marketData || {
-    symbol: assetSymbol,
-    price: 15000,
-    change: 120,
-    changePercent: 0.8,
-    volume: 50000000,
-    high: 15400,
-    low: 14600,
-    previousClose: 14800
-    rsi: 72.5,
-    ma50: 14950,
-    ma200: 14850,
-    ema200: 14850,
-    bollingerUpper: 15100,
-    bollingerMiddle: 14900,
-    bollingerLower: 14700,
-    macd: 7.2,
-    atr: 14,
-    cci: 5.8,
-    stochK: 24,
-    stochD: 20,
-    williamsR: 85,
-    momentum: 100,
-    williamsPercentR: -14,
-  marketPhase: 'neutral',
-  }
-
   try {
+    const body = await request.json()
+
+    const { assetSymbol, assetType, marketData } = body
+
+    // Fallback market data if not provided
+    const defaultMarketData: any = marketData || {
+      symbol: assetSymbol,
+      price: 15000,
+      change: 120,
+      changePercent: 0.8,
+      volume: 50000000,
+      high: 15400,
+      low: 14600,
+      previousClose: 14800,
+      rsi: 72.5,
+      ma50: 14900,
+      ma200: 14850,
+      ema200: 14850,
+      bollingerUpper: 15100,
+      bollingerMiddle: 14950,
+      bollingerLower: 14700,
+      macd: 7.2,
+      atr: 14,
+      cci: 5.8,
+      stochK: 24,
+      stochD: 20,
+      williamsR: 85,
+      williamsPercentR: 70,
+      momentum: 100,
+      momentumPercent: -14,
+      marketPhase: 'neutral',
+    }
+
     // Get user's risk profile and wellness score
     // For now, use defaults
-    const riskProfile = 'moderate'
+    const riskProfile: 'moderate'
     const wellnessScore = 80
 
     const consensus = await analyzeWithConsensus(
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
       wellnessScore
     )
 
-    // Store the decision (for history)
+    // Store decision (for history)
     const supabase = await createClient()
     await supabase.from('trading_decisions').insert({
       user_id: '00000000-0000-0000-000000001',
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
         source: 'manual_web',
         requested_at: new Date().toISOString(),
       },
-      suggested_price: consensus.analyses.find(a => a.model === 'gemini')?.suggestedEntry || null,
+      suggested_price: consensus.analyses.find((a: any) => a.model === 'gemini')?.suggestedEntry || null,
       stop_loss_price: null,
       take_profit_price: null,
       confidence: consensus.finalConfidence,
