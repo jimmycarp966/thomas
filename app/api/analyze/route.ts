@@ -6,7 +6,6 @@ import { revalidatePath } from 'next/cache'
 /**
  * Manual Multi-Model Analysis API
  * Allows triggering analysis via WhatsApp or web interface
- * FIXED: Proper typing and use of body.assetSymbol
  */
 export async function POST(request: Request) {
   try {
@@ -14,7 +13,15 @@ export async function POST(request: Request) {
 
     const { assetSymbol, assetType, marketData } = body
 
-    // Fallback market data if not provided
+    // Validate required fields
+    if (!assetSymbol || !assetType) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: assetSymbol and assetType' },
+        { status: 400 }
+      )
+    }
+
+    // Fallback market data if not provided (using realistic mock data for test)
     const defaultMarketData: any = marketData || {
       symbol: assetSymbol,
       price: 15000,
@@ -45,9 +52,10 @@ export async function POST(request: Request) {
 
     // Get user's risk profile and wellness score
     // For now, use defaults
-    const riskProfile: 'moderate'
+    const riskProfile = 'moderate'
     const wellnessScore = 80
 
+    console.log('[API: Analyze] Starting multi-model consensus analysis for', assetSymbol)
     const consensus = await analyzeWithConsensus(
       assetSymbol,
       assetType,
@@ -55,6 +63,17 @@ export async function POST(request: Request) {
       riskProfile,
       wellnessScore
     )
+
+    console.log('[API: Analyze] Consensus result:', {
+      decision: consensus.finalDecision,
+      confidence: consensus.finalConfidence,
+      consensusLevel: consensus.consensusLevel,
+      models: consensus.analyses.map(a => ({
+        model: a.model,
+        decision: a.decision,
+        confidence: a.confidence
+      }))
+    })
 
     // Store decision (for history)
     const supabase = await createClient()
@@ -67,16 +86,16 @@ export async function POST(request: Request) {
         ...consensus,
         source: 'manual_web',
         requested_at: new Date().toISOString(),
+        models: consensus.analyses.map(a => a.model),
       },
-      suggested_price: consensus.analyses.find((a: any) => a.model === 'gemini')?.suggestedEntry || null,
-      stop_loss_price: null,
-      take_profit_price: null,
       confidence: consensus.finalConfidence,
       status: consensus.shouldExecute ? 'approved' : 'pending',
       created_at: new Date().toISOString(),
     })
 
     revalidatePath('/dashboard')
+
+    console.log('[API: Analyze] Analysis saved successfully')
 
     return NextResponse.json({
       success: true,
