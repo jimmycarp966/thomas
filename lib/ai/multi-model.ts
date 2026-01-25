@@ -34,10 +34,11 @@ export interface ConsensusResult {
 }
 
 // Model weights for consensus (can be adjusted based on performance)
+// Updated 2026-01-24: Daniel prefers GLM 4.7 with higher weight (45%) for better Argentine market context
 const MODEL_WEIGHTS: Record<ModelName, number> = {
-  claude: 0.40,   // Strong reasoning, conservative
+  claude: 0.30,   // Strong reasoning, conservative
   gemini: 0.35,   // Fast, good at patterns
-  glm: 0.25,      // Diverse perspective
+  glm: 0.45,      // Diverse perspective (NOW HIGHEST - Daniel's preference)
 }
 
 // Minimum confidence thresholds
